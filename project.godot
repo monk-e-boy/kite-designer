@@ -15,7 +15,7 @@ _global_script_class_icons={
 
 [application]
 
-config/name="test 1"
+config/name="Kite Designer"
 run/main_scene="res://Spatial.tscn"
 config/icon="res://icon.png"
 
