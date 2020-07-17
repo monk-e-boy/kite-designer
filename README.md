@@ -1,4 +1,4 @@
-# kite-designer
+# Kite Designer
 3D kite kite design software
 
 # Get it working
@@ -14,3 +14,11 @@ Click the play button
 ![godot](/readme/godot-logo.svg)
 
 Download [Godot](https://godotengine.org/). I use 3.2.2
+
+Open the project in godot:
+
+![godot kite design](/readme/godot-load.jpg)
+
+Then use the play button to run the code
+
+![godot kite design](/readme/godot-run.jpg)
