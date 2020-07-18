@@ -1,7 +1,7 @@
 # Kite Designer
 3D kite kite design software
 
-# Get it working
+# How to get it working
 Download the source code
 
 Put it into a folder somewhere
