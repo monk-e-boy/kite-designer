@@ -119,7 +119,8 @@ var points6 = [
 ]
 
 var kite = {
-	"le-tube": true
+	"le-tube": true,
+	"center-y": 1.0
 }
 
 var atts = [
@@ -137,10 +138,10 @@ var atts = [
 		"length": 2,
 		"height": 1.5,
 		"AoA": -5,
-		"angle": -10,
+		"angle": 0,
 		"sweep": 0,
-		"distance": 0.6,
-		"offset-y-angle": -10,
+		"distance": 1,
+		"offset-y-angle": 20,
 		"cone-angle": 20
 	},
 	{
@@ -149,30 +150,30 @@ var atts = [
 		"AoA": -5,
 		"angle": -20,
 		"sweep": 0,
-		"distance": 0.6,
+		"distance": 1,
 		"offset-y-angle": -10,
 		"cone-angle": 20
 	},
-	{
-		"length": 2,
-		"height": 1.5,
-		"AoA": -5,
-		"angle": -20,
-		"sweep": 0,
-		"distance": 0.6,
-		"offset-y-angle": -10,
-		"cone-angle": 20
-	},
-	{
-		"length": 2,
-		"height": 0.01,
-		"AoA": -5,
-		"angle": -20,
-		"sweep": 0,
-		"distance": 0.6,
-		"offset-y-angle": -10,
-		"cone-angle": 20
-	}
+#	{
+#		"length": 2,
+#		"height": 1.5,
+#		"AoA": -5,
+#		"angle": -20,
+#		"sweep": 0,
+#		"distance": 0.6,
+#		"offset-y-angle": -10,
+#		"cone-angle": 20
+#	},
+#	{
+#		"length": 2,
+#		"height": 0.01,
+#		"AoA": -5,
+#		"angle": -20,
+#		"sweep": 0,
+#		"distance": 0.6,
+#		"offset-y-angle": -10,
+#		"cone-angle": 20
+#	}
 ]
 
 var profiles = []
@@ -190,7 +191,7 @@ class Profile:
 
 
 	func get_vectors(pts, atts):
-		var center_y = 2.0
+		var center_y = 1#kite["center-y"]
 		
 		var tmp = []
 		for p in pts:
@@ -220,10 +221,6 @@ class Profile:
 		for i in range(tmp.size()):
 			tmp[i] = tmp[i].rotated(Vector3(0,0,1), deg2rad(atts["angle"]))
 			
-		# TRANSLATE Y ... we are
-		for i in range(tmp.size()):
-			tmp[i] += Vector3(0,center_y,0)
-			
 		# Push RIGHT
 		for i in range(tmp.size()):
 			tmp[i] += Vector3(atts["distance"],0,0)
@@ -232,6 +229,10 @@ class Profile:
 		for i in range(tmp.size()):
 			tmp[i] = tmp[i].rotated(Vector3(0,0,1), deg2rad(atts["offset-y-angle"]))
 		
+		# TRANSLATE Y ... we are
+		for i in range(tmp.size()):
+			tmp[i] += Vector3(0,center_y,0)
+	
 		return tmp
 
 
@@ -296,18 +297,18 @@ func get_vectors(pts, atts):
 	# rotate around Z -> C shaped kite
 	for i in range(tmp.size()):
 		tmp[i] = tmp[i].rotated(Vector3(0,0,1), deg2rad(atts["angle"]))
-		
-	# TRANSLATE Y ... we are
-	for i in range(tmp.size()):
-		tmp[i] += Vector3(0,center_y,0)
-		
+	
 	# Push RIGHT
 	for i in range(tmp.size()):
 		tmp[i] += Vector3(atts["distance"],0,0)
-		
+
 	# rotate DOWN
 	for i in range(tmp.size()):
 		tmp[i] = tmp[i].rotated(Vector3(0,0,1), deg2rad(atts["offset-y-angle"]))
+	
+	# TRANSLATE Y ... we are
+#	for i in range(tmp.size()):
+#		tmp[i] += Vector3(0,center_y,0)
 	
 	return tmp
 

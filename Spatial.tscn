@@ -89,27 +89,31 @@ class LEnd:
 		for i in range(points.size()):
 			points[i] = points[i].rotated(Vector3(0,0,1), deg2rad(tube_angle_z))
 			
+		# Connect edge of LE tube to profile
+		for i in range(points.size()):
+			points[i] -= p
+			
+		# rotate around X (the tip of the profile)
+		for i in range(points.size()):
+			points[i] = points[i].rotated(Vector3(1,0,0), deg2rad(45))
+		
 		#
 		# Apply some of the transforms of the parent profile
 		#
 		var atts = self.profile.atts
-		var center_y = 2.0
+		var center_y = 1.0
 		
-		for i in range(points.size()):
-			points[i] = points[i].rotated(Vector3(1,0,0), deg2rad(atts[\"AoA\"]))
+		#for i in range(points.size()):
+	#		points[i] = points[i].rotated(Vector3(1,0,0), deg2rad(atts[\"AoA\"]))
 			
-		# sweep
+		# sweep - move in Z
 		for i in range(points.size()):
 			points[i] += Vector3(0, 0, atts[\"sweep\"])
 			
 		# rotate around Z -> C shaped kite
 		for i in range(points.size()):
 			points[i] = points[i].rotated(Vector3(0,0,1), deg2rad(atts[\"angle\"]))
-			
-		# TRANSLATE Y ... we are
-		for i in range(points.size()):
-			points[i] += Vector3(0,center_y,0)
-			
+		
 		# Push RIGHT
 		for i in range(points.size()):
 			points[i] += Vector3(atts[\"distance\"],0,0)
@@ -117,7 +121,11 @@ class LEnd:
 		# rotate DOWN
 		for i in range(points.size()):
 			points[i] = points[i].rotated(Vector3(0,0,1), deg2rad(atts[\"offset-y-angle\"]))
-			
+		
+		# TRANSLATE Y ... we are
+		for i in range(points.size()):
+			points[i] += Vector3(0,center_y,0)
+		
 		return points
 	
 
@@ -141,8 +149,18 @@ func build(surface_tool):
 	for profile in get_parent().profiles:
 		var e = LEnd.new(profile)
 		draw_end(surface_tool, e.points)
-
-
+		
+	var p1 = get_parent().profiles[0]
+	var p2 = get_parent().profiles[1]
+	
+	
+	for p in range(get_parent().profiles.size()-1):
+		var e1 = LEnd.new(get_parent().profiles[p])
+		var e2 = LEnd.new(get_parent().profiles[p+1])
+		
+		for i in range(e1.points.size()):
+			surface_tool.add_vertex(e1.points[i])
+			surface_tool.add_vertex(e2.points[i])
 
 
 func draw_end(surface_tool, points):
