@@ -149,7 +149,7 @@ class LEnd_XXX:
 		for i in range(count):
 			points.append(p.rotated(Vector3(1,0,0), deg2rad(angle*i)))
 
-		# rotate around X (the tip of the profile)
+		# ELBOW JOINT - rotate around Y
 		for i in range(points.size()):
 			points[i] = points[i].rotated(Vector3(0,1,0), deg2rad(45))
 	
@@ -195,6 +195,84 @@ class LEnd_XXX:
 		
 		return points
 
+
+class LEnd_YYY:
+	var points = []
+	var profile = null
+
+
+	func _init(profile):
+		self.profile = profile
+		self.points = tube_end(0.3)
+
+
+	func tube_end(radius: float):
+		var p = Vector3(0,radius,0)
+		var count = 20
+		var angle = 360.0 / count
+		
+		var points = []
+		# Create a circle of points
+		for i in range(count):
+			points.append(p.rotated(Vector3(1,0,0), deg2rad(angle*i)))
+			
+		# ELBOW JOINT - rotate around Y
+		for i in range(points.size()):
+			points[i] = points[i].rotated(Vector3(0,1,0), deg2rad(90))
+	
+		#for i in range(points.size()):
+		#	points[i] = points[i].rotated(Vector3(0,0,1), deg2rad(tube_angle_z))
+			
+		# Connect edge of LE tube to profile
+		for i in range(points.size()):
+			points[i] -= p
+	
+		# rotate around X (the tip of the profile)
+#		for i in range(points.size()):
+#			points[i] = points[i].rotated(Vector3(1,0,0), deg2rad(45))
+		
+		#
+		# move to TRAILING EDGE of profile
+		#
+		#var end_pos = self.profile.points[self.profile.points.size()-1]
+		var end_pos = Vector3(0, 0, -self.profile.atts[\"length\"])
+		for i in range(points.size()):
+			points[i] += end_pos
+		#
+		#
+		#
+		
+		#
+		# Apply some of the transforms of the parent profile
+		#
+		var atts = self.profile.atts
+		var center_y = 1.0
+		
+		for i in range(points.size()):
+			points[i] = points[i].rotated(Vector3(1,0,0), deg2rad(atts[\"AoA\"]))
+			
+		# sweep - move in Z
+		for i in range(points.size()):
+			points[i] += Vector3(0, 0, atts[\"sweep\"])
+			
+		# rotate around Z -> C shaped kite
+		for i in range(points.size()):
+			points[i] = points[i].rotated(Vector3(0,0,1), deg2rad(atts[\"angle\"]))
+		
+		# Push RIGHT
+		for i in range(points.size()):
+			points[i] += Vector3(atts[\"distance\"],0,0)
+			
+		# rotate DOWN
+		for i in range(points.size()):
+			points[i] = points[i].rotated(Vector3(0,0,1), deg2rad(atts[\"offset-y-angle\"]))
+		
+		# TRANSLATE Y ... we are
+		for i in range(points.size()):
+			points[i] += Vector3(0,center_y,0)
+		
+		return points
+
 func _ready():
 	var surface_tool = SurfaceTool.new()
 	var mesh = Mesh.new()
@@ -213,22 +291,27 @@ func build(surface_tool):
 	
 	var ends = []
 	
-	for p in range(get_parent().profiles.size()):
-		var e = LEnd.new(get_parent().profiles[p])
+	var profiles = get_parent().profiles
+	
+	for p in range(profiles.size()-1):
+		var e = LEnd.new(profiles[p])
 		ends.append(e)
-		draw_end(surface_tool, e.points)
-		
-		break
+		#draw_end(surface_tool, e.points)
 	
 	# HACK
-	#var xx = ends.pop_back()
-	var pp = get_parent().profiles[0]
+	# 45 DEG
+	var pp = profiles[profiles.size()-1]
 	var e = LEnd_XXX.new(pp)
 	ends.append(e)
+	#draw_end(surface_tool, e.points)
 	
+	# HACK END OF PROFILE
+	#
+	e = LEnd_YYY.new(pp)
+	ends.append(e)
 	draw_end(surface_tool, e.points)
 	
-	
+	return
 	# tube
 	for ex in range(ends.size()-1):
 		var e1 = ends[ex]
@@ -237,13 +320,6 @@ func build(surface_tool):
 			surface_tool.add_vertex(e1.points[i])
 			surface_tool.add_vertex(e2.points[i])
 	
-#	for p in range(get_parent().profiles.size()-1):
-#		var e1 = LEnd.new(get_parent().profiles[p])
-#		var e2 = LEnd.new(get_parent().profiles[p+1])
-#		
-#		for i in range(e1.points.size()):
-#			surface_tool.add_vertex(e1.points[i])
-#			surface_tool.add_vertex(e2.points[i])
 
 
 func draw_end(surface_tool, points):

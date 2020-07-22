@@ -280,10 +280,11 @@ func _ready():
 	
 	var j = 0
 	
-
-	for a in range(self.get_parent().profiles.size()-1):
-		var left = self.get_parent().profiles[a].points
-		var right = self.get_parent().profiles[a+1].points
+	# get the LEFT and RIGHT profiles
+	var profiles = self.get_parent().get_draw_profiles()
+	for a in range(profiles.size()-1):
+		var left = profiles[a].points
+		var right = profiles[a+1].points
 	
 		var faces = left.size()
 		for i in range(faces):
@@ -309,50 +310,6 @@ func _ready():
 		# debug_vec_pairs += strip_a.flatten_strip()
 		strips.append(strip)
 
-
-	#
-	#
-	#
-	# MIRROR
-	#
-	#
-
-#	for a in range(atts.size()-1):
-#	#for a in range(2):
-#		var right = self.get_parent().get_vectors(pts, atts[a])
-#		for i in range(right.size()):
-#			right[i].x *= -1
-#		
-#		var left = self.get_parent().get_vectors(pts, atts[a+1])
-#		for i in range(left.size()):
-#			left[i].x *= -1
-#		
-#		var faces = left.size()
-#		for i in range(faces):
-#			surface_tool.add_vertex(left[i])
-#			surface_tool.add_vertex(right[i])
-#			self.vertex_count += 2
-#	
-#		# draw the faces - each face is two triangles
-#		for i in range(faces-1):
-#			# top triangle
-#			surface_tool.add_index(j)
-#			surface_tool.add_index(j+1)
-#			surface_tool.add_index(j+2)
-#			# bottom triangle
-#			surface_tool.add_index(j+1)
-#			surface_tool.add_index(j+3)
-#			surface_tool.add_index(j+2)
-#			j += 2
-	
-#		# START NEW STRIP
-#		j += 2
-#		var strip = Strip.new(left, right, "A")
-#		# debug_vec_pairs += strip_a.flatten_strip()
-#		strips.append(strip)
-
-
-	#
 	#
 	#
 	surface_tool.generate_normals()
