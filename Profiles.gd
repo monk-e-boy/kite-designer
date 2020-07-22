@@ -112,58 +112,7 @@ var kite = {
 	"center-y": 1.0
 }
 
-var atts = [
-	{
-		"length": 2,
-		"height": 1.5,
-		"AoA": -5,
-		"angle": 0,
-		"sweep": 0,
-		"distance": 0,
-		"offset-y-angle": 0,
-		"cone-angle": 20
-	},
-	{
-		"length": 2,
-		"height": 1.5,
-		"AoA": -5,
-		"angle": -5,
-		"sweep": 0,
-		"distance": 1,
-		"offset-y-angle": 20,
-		"cone-angle": 20
-	},
-	{
-		"length": 2,
-		"height": 1.5,
-		"AoA": -5,
-		"angle": -20,
-		"sweep": 0,
-		"distance": 1,
-		"offset-y-angle": -10,
-		"cone-angle": 20
-	},
-#	{
-#		"length": 2,
-#		"height": 1.5,
-#		"AoA": -5,
-#		"angle": -20,
-#		"sweep": 0,
-#		"distance": 0.6,
-#		"offset-y-angle": -10,
-#		"cone-angle": 20
-#	},
-#	{
-#		"length": 2,
-#		"height": 0.01,
-#		"AoA": -5,
-#		"angle": -20,
-#		"sweep": 0,
-#		"distance": 0.6,
-#		"offset-y-angle": -10,
-#		"cone-angle": 20
-#	}
-]
+var atts = []
 
 var profiles = []
 
@@ -329,6 +278,17 @@ func go():
 #		profiles.push_front(tmp)
 
 
+func get_draw_profiles():
+	var p = profiles.duplicate()
+	# LEFT SIDE OF KITE is a mirror of the right - skip the middle profile
+	for i in range(1, atts.size()):
+		var tmp = Profile.new(points.duplicate(), atts[i])
+		tmp.mirror()
+		p.push_front(tmp)
+		
+	return p
+
+
 func _init():
 	go()
 
@@ -340,7 +300,7 @@ func _ready():
 	surface_tool.begin(Mesh.PRIMITIVE_LINES)
 	surface_tool.set_material(material)
 
-	for profile in profiles:
+	for profile in get_draw_profiles():
 		prof2(surface_tool, profile)
 	
 	surface_tool.generate_normals()

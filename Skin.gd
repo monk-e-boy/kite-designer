@@ -127,11 +127,13 @@ class Tri2:
 				return angle
 
 		return 0
-		
+
+
 	func length(a, b):
 		var tmp = b-a
 		return tmp.length()
-	
+
+
 	func draw(surface_tool, vertex_count):
 		surface_tool.add_vertex(self.v0)
 		surface_tool.add_vertex(self.v1)
@@ -141,7 +143,8 @@ class Tri2:
 		surface_tool.add_index(vertex_count+1)
 		surface_tool.add_index(vertex_count+2)
 		return vertex_count + 3
-		
+
+
 	func outline():
 		var vec_pairs = []
 		vec_pairs.append([self.v0, self.v1])
@@ -152,7 +155,7 @@ class Tri2:
 		vec_pairs.append([self.v0 + tmp, self.v0 + tmp + Vector3(0,0,0.05)])
 		
 		return vec_pairs
-		
+
 
 
 
@@ -275,14 +278,10 @@ func _ready():
 	surface_tool.begin(Mesh.PRIMITIVE_TRIANGLES)
 	surface_tool.set_material(material)
 	
-#	var pts = self.get_parent().points
-#	var atts = self.get_parent().atts
 	var j = 0
 	
-	#for a in range(atts.size()-1):
+
 	for a in range(self.get_parent().profiles.size()-1):
-#		var left = self.get_parent().get_vectors(pts, atts[a])
-#		var right = self.get_parent().get_vectors(pts, atts[a+1])
 		var left = self.get_parent().profiles[a].points
 		var right = self.get_parent().profiles[a+1].points
 	
