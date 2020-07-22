@@ -1,6 +1,8 @@
 extends MeshInstance
 
 export(SpatialMaterial) var material
+#var yaml = preload("res://addons/godot-yaml/gdyaml.gdns").new()
+var points = []
 
 var points1 = [
 	[0.0,  0.0],
@@ -23,12 +25,6 @@ var points2 = [
 	[60,0]
 ]
 
-var points = [
-	[0.000000,0.000000],
-	[10,20],
-	[20,20],
-	[100,0]
-]
 
 var points12 = [
 	[0.000000,0.000000],
@@ -36,13 +32,6 @@ var points12 = [
 	[-60,0]
 ]
 
-var points4 = [
-	[0.000000,0.000000],
-	[0,8],
-	[20,12],
-	[40,16],
-	[60,0]
-]
 
 var points3 = [
 	[0.000000,0.000000],
@@ -138,7 +127,7 @@ var atts = [
 		"length": 2,
 		"height": 1.5,
 		"AoA": -5,
-		"angle": 0,
+		"angle": -5,
 		"sweep": 0,
 		"distance": 1,
 		"offset-y-angle": 20,
@@ -236,7 +225,95 @@ class Profile:
 		return tmp
 
 
-func _init():
+func load_atts():
+	var file = File.new()
+	file.open("user://kite.txt", File.READ)
+	
+	atts = []
+	var default = {
+		"length": 1,
+		"height": 1,
+		"AoA": 0,
+		"angle": -50,
+		"sweep": 0,
+		"distance": 1,
+		"offset-y-angle": -10,
+		"cone-angle": 5
+	}
+	var prof_att = {}
+	var at = false
+	#for line in file.get_line():
+	while !file.eof_reached():
+		var line = file.get_line()
+
+		if at and not line.find("#")==0:
+			var tmp = []
+			var t1 = line.strip_edges()
+			if t1.length() > 0:
+				var t2 = line.split(":")
+				tmp.append(t2[0].strip_edges())
+				tmp.append(t2[1].strip_edges())
+				#points.append(tmp)
+				print(tmp)
+				prof_att[tmp[0]] = float(tmp[1])
+		
+		if at and line.length()==0:
+			atts.append(prof_att)
+			prof_att = default.duplicate()
+			
+		if at and line.find("\t") == -1 and line.length()>0:
+			at = false
+			print(line + " END END")
+			
+		if line=="atts:":
+			at = true
+			prof_att = default.duplicate()
+			print("proflie attributes:")
+			
+	file.close()
+
+
+func load_profile():
+	var file = File.new()
+	file.open("user://kite.txt", File.READ)
+	
+	points = []
+	var prof = false
+	#for line in file.get_line():
+	while !file.eof_reached():
+		var line = file.get_line()
+
+		if prof:
+			print(line)
+			var tmp = []
+			var t1 = line.strip_edges()
+			if t1.length() > 0:
+				var t2 = line.split(",")
+				tmp.append(float(t2[0]))
+				tmp.append(float(t2[1]))
+				points.append(tmp)
+			
+		if line=="profile:":
+			prof = true
+			print("profile:")
+			
+		if line=="":
+			prof = false
+			
+	file.close()
+	
+	
+func load_kite():
+	var file = File.new()
+	file.open("user://kite.txt", File.READ)
+	file.close()
+	#return content
+
+
+func go():
+	load_profile()
+	load_atts()
+	
 	# atts[0] is the middle of the kite
 	for i in range(1, atts.size()):
 		atts[i]["distance"] += atts[i-1]["distance"]
@@ -246,10 +323,14 @@ func _init():
 		profiles.append(Profile.new(points.duplicate(), attribute))
 	
 	# LEFT SIDE OF KITE is a mirror of the right - skip the middle profile
-	for i in range(1, atts.size()):
-		var tmp = Profile.new(points.duplicate(), atts[i])
-		tmp.mirror()
-		profiles.push_front(tmp)
+#	for i in range(1, atts.size()):
+#		var tmp = Profile.new(points.duplicate(), atts[i])
+#		tmp.mirror()
+#		profiles.push_front(tmp)
+
+
+func _init():
+	go()
 
 
 # Called when the node enters the scene tree for the first time.

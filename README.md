@@ -22,3 +22,21 @@ Open the project in godot:
 Then use the play button to run the code
 
 ![godot kite design](/readme/godot-run.jpg)
+
+# Where is the kite.txt file?
+
+C:\Users\XXX\AppData\Roaming\Godot\app_userdata\Kite Designer
+
+Where XXX is your user name
+
+[godot paths](https://docs.godotengine.org/en/3.0/tutorials/io/data_paths.html#user-path-persistent-data)
+
+# Vector maths
+
+Just some notes on vector maths
+
+[bisect two vectors](https://www.quora.com/How-do-you-prove-two-unit-vectors-a-and-b-a-+-b-bisects-the-angle-between-vector-a-and-vector-b)
+
+![a + b](bisect-two-vectors.gif)
+
+

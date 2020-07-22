@@ -48,17 +48,17 @@ albedo_color = Color( 0.862745, 0.262745, 0.811765, 1 )
 background_mode = 1
 background_color = Color( 0.556863, 0.760784, 0.643137, 1 )
 
-[sub_resource type="ShaderMaterial" id=12]
+[sub_resource type="ShaderMaterial" id=9]
 
-[sub_resource type="SpatialMaterial" id=9]
+[sub_resource type="SpatialMaterial" id=10]
 flags_unshaded = true
 albedo_color = Color( 0, 0, 0, 1 )
 
-[sub_resource type="SpatialMaterial" id=10]
+[sub_resource type="SpatialMaterial" id=11]
 params_cull_mode = 2
 albedo_color = Color( 0.337255, 0.643137, 0.913725, 1 )
 
-[sub_resource type="SpatialMaterial" id=11]
+[sub_resource type="SpatialMaterial" id=12]
 flags_unshaded = true
 albedo_color = Color( 0.615686, 0.0901961, 0.447059, 1 )
 
@@ -70,14 +70,14 @@ export(SpatialMaterial) var material
 class LEnd:
 	var points = []
 	var profile = null
-	
+
+
 	func _init(profile):
 		self.profile = profile
-		self.points = tube_end(Vector3(0,0,0), 0, 0.3)
+		self.points = tube_end(0.3)
 
-		
 
-	func tube_end(tube_end: Vector3, tube_angle_z: float, radius: float):
+	func tube_end(radius: float):
 		var p = Vector3(0,radius,0)
 		var count = 20
 		var angle = 360.0 / count
@@ -86,8 +86,8 @@ class LEnd:
 		for i in range(count):
 			points.append(p.rotated(Vector3(1,0,0), deg2rad(angle*i)))
 			
-		for i in range(points.size()):
-			points[i] = points[i].rotated(Vector3(0,0,1), deg2rad(tube_angle_z))
+#		for i in range(points.size()):
+#			points[i] = points[i].rotated(Vector3(0,0,1), deg2rad(tube_angle_z))
 			
 		# Connect edge of LE tube to profile
 		for i in range(points.size()):
@@ -127,8 +127,73 @@ class LEnd:
 			points[i] += Vector3(0,center_y,0)
 		
 		return points
-	
 
+
+
+class LEnd_XXX:
+	var points = []
+	var profile = null
+
+
+	func _init(profile):
+		self.profile = profile
+		self.points = tube_end(0.3)
+
+
+	func tube_end(radius: float):
+		var p = Vector3(0,radius,0)
+		var count = 20
+		var angle = 360.0 / count
+		
+		var points = []
+		for i in range(count):
+			points.append(p.rotated(Vector3(1,0,0), deg2rad(angle*i)))
+
+		# rotate around X (the tip of the profile)
+		for i in range(points.size()):
+			points[i] = points[i].rotated(Vector3(0,1,0), deg2rad(45))
+	
+		#for i in range(points.size()):
+		#	points[i] = points[i].rotated(Vector3(0,0,1), deg2rad(tube_angle_z))
+			
+		# Connect edge of LE tube to profile
+		for i in range(points.size()):
+			points[i] -= p
+			
+		# rotate around X (the tip of the profile)
+		for i in range(points.size()):
+			points[i] = points[i].rotated(Vector3(1,0,0), deg2rad(45))
+		
+		#
+		# Apply some of the transforms of the parent profile
+		#
+		var atts = self.profile.atts
+		var center_y = 1.0
+		
+		#for i in range(points.size()):
+	#		points[i] = points[i].rotated(Vector3(1,0,0), deg2rad(atts[\"AoA\"]))
+			
+		# sweep - move in Z
+		for i in range(points.size()):
+			points[i] += Vector3(0, 0, atts[\"sweep\"])
+			
+		# rotate around Z -> C shaped kite
+		for i in range(points.size()):
+			points[i] = points[i].rotated(Vector3(0,0,1), deg2rad(atts[\"angle\"]))
+		
+		# Push RIGHT
+		for i in range(points.size()):
+			points[i] += Vector3(atts[\"distance\"],0,0)
+			
+		# rotate DOWN
+		for i in range(points.size()):
+			points[i] = points[i].rotated(Vector3(0,0,1), deg2rad(atts[\"offset-y-angle\"]))
+		
+		# TRANSLATE Y ... we are
+		for i in range(points.size()):
+			points[i] += Vector3(0,center_y,0)
+		
+		return points
 
 func _ready():
 	var surface_tool = SurfaceTool.new()
@@ -146,21 +211,39 @@ func _ready():
 func build(surface_tool):
 	#var pts = tube_end(Vector3(0,0,0), 0, 1)
 	
-	for profile in get_parent().profiles:
-		var e = LEnd.new(profile)
+	var ends = []
+	
+	for p in range(get_parent().profiles.size()):
+		var e = LEnd.new(get_parent().profiles[p])
+		ends.append(e)
 		draw_end(surface_tool, e.points)
 		
-	var p1 = get_parent().profiles[0]
-	var p2 = get_parent().profiles[1]
+		break
+	
+	# HACK
+	#var xx = ends.pop_back()
+	var pp = get_parent().profiles[0]
+	var e = LEnd_XXX.new(pp)
+	ends.append(e)
+	
+	draw_end(surface_tool, e.points)
 	
 	
-	for p in range(get_parent().profiles.size()-1):
-		var e1 = LEnd.new(get_parent().profiles[p])
-		var e2 = LEnd.new(get_parent().profiles[p+1])
-		
+	# tube
+	for ex in range(ends.size()-1):
+		var e1 = ends[ex]
+		var e2 = ends[ex+1]
 		for i in range(e1.points.size()):
 			surface_tool.add_vertex(e1.points[i])
 			surface_tool.add_vertex(e2.points[i])
+	
+#	for p in range(get_parent().profiles.size()-1):
+#		var e1 = LEnd.new(get_parent().profiles[p])
+#		var e2 = LEnd.new(get_parent().profiles[p+1])
+#		
+#		for i in range(e1.points.size()):
+#			surface_tool.add_vertex(e1.points[i])
+#			surface_tool.add_vertex(e2.points[i])
 
 
 func draw_end(surface_tool, points):
@@ -229,7 +312,7 @@ ANCHOR_NODE_PATH = NodePath("..")
 [node name="GUI" type="Node" parent="."]
 
 [node name="GridContainer" type="GridContainer" parent="GUI"]
-material = SubResource( 12 )
+material = SubResource( 9 )
 margin_left = 882.0
 margin_right = 1024.0
 margin_bottom = 106.0
@@ -258,18 +341,18 @@ __meta__ = {
 
 [node name="Profiles" type="MeshInstance" parent="Node"]
 script = ExtResource( 9 )
-material = SubResource( 9 )
+material = SubResource( 10 )
 
 [node name="Skin" type="MeshInstance" parent="Node/Profiles"]
 process_priority = 1
 script = ExtResource( 10 )
-material = SubResource( 10 )
+material = SubResource( 11 )
 
 [node name="SkinOutline" type="MeshInstance" parent="Node/Profiles/Skin"]
 process_priority = 2
 visible = false
 script = ExtResource( 11 )
-material = SubResource( 11 )
+material = SubResource( 12 )
 
 [node name="LE" type="MeshInstance" parent="Node/Profiles"]
 script = SubResource( 13 )
