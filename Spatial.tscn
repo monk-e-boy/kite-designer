@@ -67,6 +67,9 @@ script/source = "extends MeshInstance
 
 export(SpatialMaterial) var material
 
+
+
+
 class LEnd:
 	var points = []
 	var profile = null
@@ -81,6 +84,7 @@ class LEnd:
 		var p = Vector3(0,radius,0)
 		var count = 20
 		var angle = 360.0 / count
+		var tip_attach_angle = 0
 		
 		var points = []
 		for i in range(count):
@@ -95,7 +99,7 @@ class LEnd:
 			
 		# rotate around X (the tip of the profile)
 		for i in range(points.size()):
-			points[i] = points[i].rotated(Vector3(1,0,0), deg2rad(45))
+			points[i] = points[i].rotated(Vector3(1,0,0), deg2rad(tip_attach_angle))
 		
 		#
 		# Apply some of the transforms of the parent profile
@@ -130,7 +134,7 @@ class LEnd:
 
 
 
-class LEnd_XXX:
+class LEnd_Elbow:
 	var points = []
 	var profile = null
 
@@ -144,6 +148,7 @@ class LEnd_XXX:
 		var p = Vector3(0,radius,0)
 		var count = 20
 		var angle = 360.0 / count
+		var tip_attach_angle = 0
 		
 		var points = []
 		for i in range(count):
@@ -162,7 +167,7 @@ class LEnd_XXX:
 			
 		# rotate around X (the tip of the profile)
 		for i in range(points.size()):
-			points[i] = points[i].rotated(Vector3(1,0,0), deg2rad(45))
+			points[i] = points[i].rotated(Vector3(1,0,0), deg2rad(tip_attach_angle))
 		
 		#
 		# Apply some of the transforms of the parent profile
@@ -286,6 +291,26 @@ func _ready():
 	self.set_mesh(mesh)
 
 
+func mid_angle(surface_tool):
+	var a = Vector3(-1,0,0)
+	var b = Vector3(-2,-1,0)
+	var c = Vector3(-3,-1,1)
+	
+	# HACK - SKELETON HACK
+	surface_tool.add_vertex(a)
+	surface_tool.add_vertex(b)
+	
+	surface_tool.add_vertex(b)
+	surface_tool.add_vertex(c)
+	
+	# b points towards the joint - flip b so it points away
+	var start = (b-a) * -1
+	var tmp = c-b
+	var end = start + tmp
+	surface_tool.add_vertex(b)
+	surface_tool.add_vertex(end+b)
+	
+
 func build(surface_tool):
 	#var pts = tube_end(Vector3(0,0,0), 0, 1)
 	
@@ -296,29 +321,32 @@ func build(surface_tool):
 	for p in range(profiles.size()-1):
 		var e = LEnd.new(profiles[p])
 		ends.append(e)
-		#draw_end(surface_tool, e.points)
+		draw_end(surface_tool, e.points)
 	
-	# HACK
+	# HACK - elbow and oval
+	var e1 = LEnd.new(profiles[0])
 	# 45 DEG
 	var pp = profiles[profiles.size()-1]
-	var e = LEnd_XXX.new(pp)
-	ends.append(e)
-	#draw_end(surface_tool, e.points)
+	var e2 = LEnd_Elbow.new(pp)
+	ends.append(e2)
+	draw_end(surface_tool, e2.points)
 	
 	# HACK END OF PROFILE
 	#
-	e = LEnd_YYY.new(pp)
-	ends.append(e)
-	draw_end(surface_tool, e.points)
+	var e3 = LEnd_YYY.new(pp)
+	ends.append(e3)
+	draw_end(surface_tool, e3.points)
 	
-	return
+	mid_angle(surface_tool)
+	
 	# tube
-	for ex in range(ends.size()-1):
-		var e1 = ends[ex]
-		var e2 = ends[ex+1]
-		for i in range(e1.points.size()):
-			surface_tool.add_vertex(e1.points[i])
-			surface_tool.add_vertex(e2.points[i])
+	if false:
+		for ex in range(ends.size()-1):
+			var e_1 = ends[ex]
+			var e_2 = ends[ex+1]
+			for i in range(e_1.points.size()):
+				surface_tool.add_vertex(e_1.points[i])
+				surface_tool.add_vertex(e_2.points[i])
 	
 
 
@@ -370,7 +398,6 @@ material = SubResource( 6 )
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )
 
 [node name="LESkeleton" type="MeshInstance" parent="LeadingEdge"]
-visible = false
 script = ExtResource( 8 )
 material = SubResource( 7 )
 
@@ -416,6 +443,7 @@ __meta__ = {
 [node name="Node" type="Node" parent="."]
 
 [node name="Profiles" type="MeshInstance" parent="Node"]
+visible = false
 script = ExtResource( 9 )
 material = SubResource( 10 )
 

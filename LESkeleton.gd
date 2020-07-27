@@ -2,12 +2,61 @@ extends MeshInstance
 
 export(SpatialMaterial) var material
 
+var angle = 1
+
 
 func _ready():
+	
+	var surface_tool = SurfaceTool.new();
+	
+	#surface_tool.begin(Mesh.PRIMITIVE_TRIANGLES);
+	surface_tool.begin(Mesh.PRIMITIVE_LINES)
+	
+	# for details on how/why this works:
+	# https://github.com/godotengine/godot/issues/40737
+	# https://godotforums.org/discussion/19045/how-do-i-use-spatialmaterial-in-gdscript
+	var mat = SpatialMaterial.new()
+	mat.params_cull_mode = SpatialMaterial.CULL_DISABLED;
+	mat.vertex_color_use_as_albedo = SpatialMaterial.FLAG_ALBEDO_FROM_VERTEX_COLOR
+	mat.flags_unshaded = SpatialMaterial.FLAG_UNSHADED
+	surface_tool.set_material(mat)
+	
+	surface_tool.add_normal(Vector3(0, 0, -1));
+	surface_tool.add_color(Color(1, 0, 0, 1));
+	surface_tool.add_vertex(Vector3(-1, 1, 0));
+	
+	surface_tool.add_normal(Vector3(0, 0, -1));
+	surface_tool.add_color(Color(0, 1, 0, 1));
+	surface_tool.add_vertex(Vector3(1, 1, 0));
+	
+	surface_tool.add_normal(Vector3(0, 0, -1));
+	surface_tool.add_color(Color(0, 0, 1, 1));
+	surface_tool.add_vertex(Vector3(0, 3, 0));
+	
+	surface_tool.add_index(0);
+	surface_tool.add_index(1);
+	surface_tool.add_index(1);
+	surface_tool.add_index(2);
+	surface_tool.add_index(2);
+	surface_tool.add_index(0);
+	
+	mesh = surface_tool.commit();
+
+#func _ready():
+func __process(delta):
 	var surface_tool = SurfaceTool.new()
 	var mesh = Mesh.new()
 	surface_tool.begin(Mesh.PRIMITIVE_LINES)
 	surface_tool.set_material(material)
+	
+	# for details on how/why this works:
+	# https://github.com/godotengine/godot/issues/40737
+	# https://godotforums.org/discussion/19045/how-do-i-use-spatialmaterial-in-gdscript
+	#var mat = SpatialMaterial.new()
+	#mat.params_cull_mode = SpatialMaterial.CULL_DISABLED;
+	#mat.vertex_color_use_as_albedo = SpatialMaterial.FLAG_ALBEDO_FROM_VERTEX_COLOR
+	#surface_tool.set_material(mat)
+	
 	
 	var line = Vector3(0,1,0)
 	var direction = Vector3(1,0,0)
@@ -17,9 +66,9 @@ func _ready():
 	var rot_z = -25.0
 	var rot_y = 45.0
 	
-	var p1 = Vector3(0,2,0)
-	var p2 = Vector3(0,0,2)
-	var p3 = Vector3(0,0,-2)
+	var p1 = Vector3(0,1,0)
+	var p2 = Vector3(0,-1,2)
+	var p3 = Vector3(0,-1,-2)
 	
 	p1 = p1.rotated(Vector3(0,0,1), deg2rad(rot_z))
 	p2 = p2.rotated(Vector3(0,0,1), deg2rad(rot_z))
@@ -29,9 +78,9 @@ func _ready():
 	#p2 = p2.rotated(Vector3(0,1,0), rot_y)
 	#p3 = p3.rotated(Vector3(0,1,0), rot_y)
 	
-	p1 += x
-	p2 += x
-	p3 += x
+	p1 += line + direction
+	p2 += line + direction
+	p3 += line + direction
 	
 	var plane = Plane(p1, p2, p3)
 	
@@ -75,13 +124,13 @@ func _ready():
 	#
 	#
 	
-	surface_tool.generate_normals()
+	#surface_tool.generate_normals()
 	surface_tool.commit(mesh)
 	self.set_mesh(mesh)
 
 
 func section(surface_tool, intersects, rot_z):
-	var my_rot = -50
+	#var my_rot = -50
 	var length = 1;
 	var p1 = Vector3(0,length,0)
 	p1 = p1.rotated(Vector3(0,0,1), deg2rad(rot_z-90))
