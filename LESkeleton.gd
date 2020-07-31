@@ -92,18 +92,32 @@ class KPlane:
 
 
 class LESection:
-	var pos = Vector3(0,0,0)
-	var end = Vector3(0,0,0)
+	var point = Vector3(0,0,0)
+	var direction = Vector3(0,0,0)
 	var color = Color8(147, 0, 150)
+	var spoke_count = 5
+	var spokes = []
+	var ray = Vector3(0,0,0)
+	var inters = []
+	var options = {
+		'render-spokes': false,
+		'render-rays': false
+	}
 	
-	func _init(pos, end):
-		self.pos = pos
-		self.end = end
+	func _init(point, direction, options):
+		self.point = point
+		self.direction = direction
+		for key in options:
+			self.options[key] = options[key]
+		#
+		self.make_spokes()
+		self.make_ray()
+		#
 		
 	func get_mid_angle(sec2: LESection, surface_tool):
-		var a = self.pos
-		var b = self.end
-		var c = sec2.end
+		var a = self.point
+		var b = self.point + self.direction
+		var c = sec2.point + sec2.direction#sec2.end
 	
 		# HACK - SKELETON HACK
 #		surface_tool.add_color(self.color);
@@ -160,14 +174,94 @@ class LESection:
 
 		#return KPlane.new(b+end_n, b, b+cross) # clockwise order
 		return KPlane.new(b+cross, b, b+end_n) # clockwise order
+	
+	# https://stackoverflow.com/questions/11132681/what-is-a-formula-to-get-a-vector-perpendicular-to-another-vector
+	func get_perpendicular_vec():
+		var x = self.direction.x
+		var y = self.direction.y
+		var z = self.direction.z
+		var v_perp = Vector3(0,0,0)
+		if z<x :
+			v_perp = Vector3(y,-x,0)
+		else:
+			v_perp = Vector3(0,-z,y)
+		return v_perp
+		
+	func get_end():
+		return self.point+self.direction
+
+
+	# used to generate the circle of the tube
+	# this is then projected back onto the plane
+	# using rays
+	func make_spokes():
+		
+		var v_perp = self.get_perpendicular_vec()
+		for i in range(1, spoke_count+1):
+			var dir_norm = self.direction.normalized()
+			var c = v_perp.rotated(dir_norm, deg2rad((360.0 / spoke_count) * i))
+			
+			c = c.normalized()
+			c *= 0.2
+			self.spokes.append(c)
+			
+	func make_ray():
+		# flip the direction to point back towards the join
+		# make it long enough to pierce the plane (* -3)
+		# it is possible that the ray and plane do not intersect (strange angles)
+		# with a short section length, a tight angle and a large tube diameter
+		# the spokes may cross the plane, shooting the ray away from the plane
+		# a designer would avoid this as the kite would be shit
+		self.ray = self.direction * -3
+		
+	func intersects(plane:KPlane):
+		for spoke in self.spokes:
+			var inter = plane.intersects_ray(
+				self.get_end() + spoke,
+				self.ray
+			)
+		
+			self.inters.append(inter)
 		
 	func render(surface_tool):
 		surface_tool.add_color(self.color)
-		surface_tool.add_vertex(self.pos)
+		surface_tool.add_vertex(self.point)
 		surface_tool.add_color(self.color)
-		surface_tool.add_vertex(self.end)
-
+		surface_tool.add_vertex(self.get_end())
 		
+		if self.options['render-spokes']:
+			for spoke in self.spokes:
+				# draw spokes
+				surface_tool.add_color(Color8(255,0,0))
+				surface_tool.add_vertex(self.get_end())
+				surface_tool.add_color(Color8(255,0,0))
+				surface_tool.add_vertex(self.get_end() + spoke)
+				
+		if self.options['render-rays']:
+			for spoke in self.spokes:
+				# draw rays
+				surface_tool.add_color(Color8(253,71,3))
+				surface_tool.add_vertex(self.get_end() + spoke)
+				surface_tool.add_color(Color8(253,71,3))
+				surface_tool.add_vertex(self.get_end() + spoke + ray)
+		
+		var tube_spokes = true
+		if tube_spokes and self.inters.size():
+			for i in range(inters.size()-1):
+				# sometimes we don't get an intersect between the ray and
+				# the plane (rare - see comment above)
+				if inters[i] and inters[i+1]:
+					surface_tool.add_color(Color8(255,0,0))
+					surface_tool.add_vertex(self.inters[i])
+					surface_tool.add_color(Color8(255,0,0))
+					surface_tool.add_vertex(self.inters[i+1])
+				
+			if inters[0] and inters[-1]:
+				surface_tool.add_color(Color8(255,0,0))
+				surface_tool.add_vertex(self.inters[0])
+				surface_tool.add_color(Color8(255,0,0))
+				surface_tool.add_vertex(self.inters[-1])
+
 
 #func _ready():
 
@@ -195,7 +289,7 @@ func _process(delta):
 	var deg3 = 90 + sin(angle3) * 90
 	
 	
-	var line = Vector3(0,1,0)
+	var point = Vector3(0,1,0)
 	var direction = Vector3(0.5,0,0)
 	direction = direction.rotated(Vector3(0,0,1), deg2rad(deg3))
 	#surface_tool.add_vertex(line)
@@ -206,7 +300,7 @@ func _process(delta):
 	
 
 	
-	var sec1 = LESection.new(line, line+direction)
+	var sec1 = LESection.new(point, direction, [])
 	sec1.render(surface_tool)
 	
 	
@@ -217,12 +311,12 @@ func _process(delta):
 	tmp = tmp.rotated(Vector3(0,1,0), deg2rad(deg1))
 	tmp = tmp.rotated(Vector3(0,0,1), deg2rad(deg3) + deg2rad(deg2)) # follows the previous angles
 	
-	var sec2 = LESection.new(line+direction, line+direction+tmp)
+	var sec2 = LESection.new(sec1.get_end(), tmp, {'render-spokes': false})
 	sec2.color = Color8(255,255,255)
 	sec2.render(surface_tool)
 	
 	var plane = sec1.get_mid_angle(sec2, surface_tool)
-	#plane.render(surface_tool)
+	plane.render(surface_tool)
 	
 	
 	var inters = []
@@ -230,7 +324,7 @@ func _process(delta):
 	for i in range(count):
 		var c = Vector3(0,0.2,0)
 		c = c.rotated(Vector3(1,0,0), deg2rad(i * (360.0/count)))
-		c += line
+		c += point
 		#surface_tool.add_vertex(c)
 		#surface_tool.add_vertex(c+direction*5)
 		
@@ -253,7 +347,8 @@ func _process(delta):
 		surface_tool.add_vertex(inters[-1])
 	
 	
-	var sec3_start = sec2.end # line+direction+tmp
+	#var sec3_start = sec2.point+sec2.direction # line+direction+tmp
+	var sec3_start = sec2.get_end()
 	var sec3_direction = tmp * 0.5
 	
 	var deg1a = sin(angle) * 90
@@ -266,28 +361,40 @@ func _process(delta):
 	#var sec3_end = sec3_start+sec3_e # line+direction+sec3_e
 
 	#sec3_start = Vector3(0,0,0)
-	var sec3 = LESection.new(sec3_start, sec3_start + sec3_direction)
-	sec3.render(surface_tool)
+	var sec3 = LESection.new(
+		sec3_start,
+		sec3_direction,
+		{
+			'render-spokes': true,
+			'render-rays': true
+		})
+	
 	
 	# assume 
 	#sec3_direction
 	# https://stackoverflow.com/questions/11132681/what-is-a-formula-to-get-a-vector-perpendicular-to-another-vector
-	var xxx = sec3_direction.x
-	var yyy = sec3_direction.y
-	var zzz = sec3_direction.z
-	var v_perp = Vector3(0,0,0)
-	if zzz<xxx :
-		v_perp = Vector3(yyy,-xxx,0)
-	else:
-		v_perp = Vector3(0,-zzz,yyy)
+#	var xxx = sec3_direction.x
+#	var yyy = sec3_direction.y
+#	var zzz = sec3_direction.z
+#	var v_perp = Vector3(0,0,0)
+#	if zzz<xxx :
+#		v_perp = Vector3(yyy,-xxx,0)
+#	else:
+#		v_perp = Vector3(0,-zzz,yyy)
 	
 	#surface_tool.add_color(Color8(255,0,0))
 	#surface_tool.add_vertex(Vector3(0,0,0))
 	#surface_tool.add_color(Color8(255,0,0))
 	#surface_tool.add_vertex(v_perp)
 	
+	var v_perp = sec3.get_perpendicular_vec()
+	
 	plane = sec2.get_mid_angle(sec3, surface_tool)
 	plane.render(surface_tool)
+	
+	sec3.intersects(plane)
+	
+	sec3.render(surface_tool)
 	
 	
 	inters = []
@@ -299,7 +406,7 @@ func _process(delta):
 		
 		c = c.normalized()
 		c *= 0.2
-		if true:
+		if false:
 			# draw spokes
 			surface_tool.add_color(Color8(255,0,0))
 			surface_tool.add_vertex(sec3_start + sec3_direction)
@@ -310,7 +417,7 @@ func _process(delta):
 		# make it long enough to pierce the plane (* -3)
 		# it is possible that the ray and plane do not intersect (strange angles)
 		var ray = sec3_direction * -3
-		if true:
+		if false:
 			# draw rays
 			surface_tool.add_color(Color8(253,71,3))
 			surface_tool.add_vertex(sec3_start + sec3_direction + c)
@@ -327,8 +434,8 @@ func _process(delta):
 			surface_tool.add_vertex(inter)
 		inters.append(inter)
 
-	var tube_spokes = true
-	var tube_outline = true
+	var tube_spokes = false
+	var tube_outline = false
 	
 	if tube_spokes:
 		for i in range(inters.size()-1):
