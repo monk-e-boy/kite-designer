@@ -92,26 +92,18 @@ class KPlane:
 		surface_tool.add_vertex(v2+p4)
 		surface_tool.add_vertex(v2+p1)
 
-class LE:
-	var options = {}
-	var spoke_count = 3
-	
-	func _init(options):
-		for key in options:
-			self.options[key] = options[key]
-			
-	
+
 
 class LESection:
 	var point = Vector3(0,0,0)
 	var direction = Vector3(0,0,0)
 	var color = Color8(147, 0, 150)
-	var spoke_count = 3
 	var spokes = []
 	var ray = Vector3(0,0,0)
 	var plane = null
 	# intersects - I've named it inters because I'm an F1 fan
 	var inters = []
+	var parent = null
 	var options = {
 		'render-spokes': false,
 		'render-rays': false,
@@ -121,9 +113,10 @@ class LESection:
 	var tmp_v_perp = 0
 	var tmp_new_angle = 0
 	
-	func _init(point, direction, options):
+	func _init(point, direction, parent, options):
 		self.point = point
 		self.direction = direction
+		self.parent = parent
 		for key in options:
 			self.options[key] = options[key]
 		#
@@ -131,10 +124,10 @@ class LESection:
 		self.make_ray()
 		#
 		
-	func get_mid_angle(sec2: LESection, surface_tool):
+	func get_mid_angle(sec: LESection):
 		var a = self.point
 		var b = self.point + self.direction
-		var c = sec2.point + sec2.direction#sec2.end
+		var c = sec.point + sec.direction
 	
 		# HACK - SKELETON HACK
 #		surface_tool.add_color(self.color);
@@ -177,17 +170,6 @@ class LESection:
 			# we rotate around z because
 			end_n = tmp.rotated(Vector3(0,0,1), deg2rad(90))
 			cross = tmp.rotated(Vector3(0,1,0), deg2rad(90))
-			
-		if false:
-			surface_tool.add_color(Color8(0,0,0))
-			surface_tool.add_vertex(b)
-			surface_tool.add_color(Color8(0,0,0))
-			surface_tool.add_vertex(b+end_n)
-			
-			surface_tool.add_color(Color8(0,0,200))#self.color)
-			surface_tool.add_vertex(b)
-			surface_tool.add_color(Color8(0,0,200))#self.color)
-			surface_tool.add_vertex(b+cross)
 
 		#return KPlane.new(b+end_n, b, b+cross) # clockwise order
 		return KPlane.new(b+cross, b, b+end_n) # clockwise order
@@ -242,6 +224,7 @@ class LESection:
 		#
 		#
 		#
+		var spoke_count = self.parent.get_spoke_count()
 		for i in range(1, spoke_count+1):
 			#var tmp = (360.0 / spoke_count) * i
 			var c = v_perp.rotated(dir_norm, deg2rad( angle + (360.0 / spoke_count) * i))
@@ -330,10 +313,161 @@ class LESection:
 				surface_tool.add_vertex(self.inters[-1])
 
 
-#func _ready():
 
 
+
+class LE:
+	var options = {}
+	var spoke_count = 4
+	
+	var sec1 = null
+	var sec2 = null
+	var sec3 = null
+	
+	var sections = []
+	
+
+	func _init(options):
+		for key in options:
+			self.options[key] = options[key]
+		
+		var point = Vector3(0,1,0)
+		var direction = Vector3(0.5,0,0)
+		var deg1 = -5
+		direction = direction.rotated(Vector3(0,0,1), deg2rad(deg1))
+		
+		var x = Vector3(1,0,0)
+		var rot_z = -25.0
+		var rot_y = 45.0
+	
+		self.sec1 = LESection.new(
+			point,
+			direction,
+			self,
+			{
+				'render-spokes': false,
+				'render-rays': false,
+				'render-inters': true
+			})
+		# The intersection plane at the centre of the kite is a special case:
+		var mid_plane = KPlane.new(Vector3(0,1,0), Vector3(0,0,1), Vector3(0,0,-1))
+		self.sec1.intersects(mid_plane)
+		
+		var deg2 = -7
+		var sweep = 25
+		#var deg3 = -7
+		var anim_length = 0.3
+		var length = 0.8+(sin(anim_length)*0.2)
+		var tmp = Vector3(0.5,0,0)
+		tmp = tmp.rotated(Vector3(0,1,0), deg2rad(sweep))
+		tmp = tmp.rotated(Vector3(0,0,1), deg2rad(deg1) + deg2rad(deg2)) # follows the previous angles
+		
+		self.sec2 = LESection.new(
+			self.sec1.get_end(),
+			tmp,
+			self,
+			{
+				'render-spokes': false,
+				'render-rays': false,
+				'render-inters': true
+			})
+		self.sec2.color = Color8(255,255,255)
+		var plane = sec1.get_mid_angle(sec2)
+		self.sec2.intersects(plane)
+		
+	
+		#var sec3_start = sec2.point+sec2.direction # line+direction+tmp
+		var sec3_start = sec2.get_end()
+		var sec3_direction = tmp * 0.5
+		
+		var deg1a = -7
+		var deg2a = sin(12) * 90
+		
+		# sec3_direction = sec3_direction.rotated(Vector3(0,0,1), deg2rad(1)) # <-- HACK HACK HACK
+		sec3_direction = sec3_direction.rotated(Vector3(0,0,1),
+		deg2rad(deg1) + deg2rad(deg2) + deg2rad(deg1a)) # <-- HACK HACK HACK
+		
+		#sec3_direction = sec3_direction.rotated(Vector3(0,1,0), deg2rad(deg2a))
+	
+		self.sec3 = LESection.new(
+			sec3_start,
+			sec3_direction,
+			self,
+			{
+				'render-spokes': false,
+				'render-rays': false,
+				'render-inters': true
+			})
+		
+		var v_perp = sec3.get_perpendicular_vec()
+		plane = sec2.get_mid_angle(sec3)
+		self.sec3.intersects(plane)
+		
+		self.add_section(sec3, deg1+deg2+deg1a, sweep, {
+			'angle': -14,
+			'sweep': 5,
+			'length': 0.5
+		})
+		
+	func add_section(previous_section, angle, sweep, options):
+		
+		var direction = Vector3(options['length'],0,0)
+		direction = direction.rotated(Vector3(0,1,0), deg2rad(sweep + options['sweep']))
+		direction = direction.rotated(Vector3(0,0,1), deg2rad(angle + options['angle']))
+		var start = previous_section.get_end()
+		
+	
+		var section = LESection.new(
+			start,
+			direction,
+			self,
+			{
+				'render-spokes': false,
+				'render-rays': false,
+				'render-inters': true
+			})
+		
+		var v_perp = section.get_perpendicular_vec()
+		var plane = previous_section.get_mid_angle(section)
+		section.intersects(plane)
+		
+		self.sections.append(section)
+
+
+	func get_spoke_count():
+		return self.spoke_count
+
+	func render(surface_tool):
+		# waggle the angle between -90 and +90 degrees
+		#	angle += 0.014
+		#	angle2 += 0.012
+		#	angle3 += 0.009
+		#var deg1 = sin(angle) * 120
+		#var deg2 = sin(angle2) * 120
+		#var deg3 = 90 + sin(angle3) * 90
+		
+		self.sec1.render(surface_tool)
+		self.sec2.render(surface_tool)
+		self.sec3.render(surface_tool)
+		self.sections[0].render(surface_tool)
+		
+		for i in range(self.spoke_count):
+			surface_tool.add_color(Color8(255,0,255))
+			surface_tool.add_vertex(self.sec1.inters[i])
+			surface_tool.add_vertex(self.sec2.inters[i])
+			
+		for i in range(self.spoke_count):
+			surface_tool.add_color(Color8(255,0,255))
+			surface_tool.add_vertex(self.sec2.inters[i])
+			surface_tool.add_vertex(self.sec3.inters[i])
+
+
+var leading_edge = null
 var surface_tool = null
+
+func _ready():
+	leading_edge = LE.new({})
+
 
 func _process(delta):
 	surface_tool = SurfaceTool.new()
@@ -347,80 +481,11 @@ func _process(delta):
 	mat.flags_unshaded = true
 	surface_tool.set_material(mat)
 	
-	
-	var leading_edge = LE.new({})
-	
-	# waggle the angle between -90 and +90 degrees
-#	angle += 0.014
-#	angle2 += 0.012
-#	angle3 += 0.009
-	var deg1 = sin(angle) * 120
-	var deg2 = sin(angle2) * 120
-	var deg3 = 90 + sin(angle3) * 90
-	
-	
-	var point = Vector3(0,1,0)
-	var direction = Vector3(0.5,0,0)
-	direction = direction.rotated(Vector3(0,0,1), deg2rad(deg3))
-	#surface_tool.add_vertex(line)
-	#surface_tool.add_vertex(line+direction*5)
-	var x = Vector3(1,0,0)
-	var rot_z = -25.0
-	var rot_y = 45.0
-	
-	var sec1 = LESection.new(point, direction, [])
-	sec1.render(surface_tool)
-	
-	deg1 = 0
-	deg2 = 30
-	var tmp = Vector3(0.8+(sin(angle)*0.2),0,0)
-	tmp = tmp.rotated(Vector3(0,1,0), deg2rad(deg1))
-	tmp = tmp.rotated(Vector3(0,0,1), deg2rad(deg3) + deg2rad(deg2)) # follows the previous angles
-	
-	var sec2 = LESection.new(
-		sec1.get_end(),
-		tmp,
-		{
-			'render-spokes': false,
-			'render-rays': false,
-			'render-inters': true
-		})
-	sec2.color = Color8(255,255,255)
-	var plane = sec1.get_mid_angle(sec2, surface_tool)	
-	sec2.intersects(plane)
-	sec2.render(surface_tool)
-	
-	#var sec3_start = sec2.point+sec2.direction # line+direction+tmp
-	var sec3_start = sec2.get_end()
-	var sec3_direction = tmp * 0.5
-	
-	var deg1a = sin(angle) * 90
-	var deg2a = sin(angle2) * 90
-	
-	# sec3_direction = sec3_direction.rotated(Vector3(0,0,1), deg2rad(1)) # <-- HACK HACK HACK
-	sec3_direction = sec3_direction.rotated(Vector3(0,0,1), deg2rad(deg1a)) # <-- HACK HACK HACK
-	sec3_direction = sec3_direction.rotated(Vector3(0,1,0), deg2rad(deg2a))
-	
-	var sec3 = LESection.new(
-		sec3_start,
-		sec3_direction,
-		{
-			'render-spokes': false,
-			'render-rays': false,
-			'render-inters': true
-		})
-	
-	var v_perp = sec3.get_perpendicular_vec()
-	plane = sec2.get_mid_angle(sec3, surface_tool)
-	sec3.intersects(plane)
-	sec3.render(surface_tool)
-	
-	
-	for i in range(leading_edge.spoke_count):
-		surface_tool.add_color(Color8(255,0,255))
-		surface_tool.add_vertex(sec2.inters[i])
-		surface_tool.add_vertex(sec3.inters[i])
-	
+	#
+	#
+	leading_edge.render(surface_tool)
+	#
+	#
 	
 	#surface_tool.generate_normals()
 	surface_tool.commit(mesh)
