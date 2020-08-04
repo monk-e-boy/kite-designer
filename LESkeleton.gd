@@ -105,10 +105,12 @@ class LESection:
 	var inters = []
 	var parent = null
 	var options = {
+		'tube-radius': 0.2,
 		'render-spokes': false,
 		'render-rays': false,
 		'render-inters': false,
-		'render-plane': false
+		'render-plane': false,
+		'render-skeleton': false
 	}
 	var tmp_v_perp = 0
 	var tmp_new_angle = 0
@@ -212,7 +214,8 @@ class LESection:
 		for i in range(360):
 			var c = v_perp.rotated(dir_norm, deg2rad(i))
 			c = c.normalized()
-			c *= 0.3
+			# make this vector / debug line long enough to see
+			c *= self.options['tube-radius'] * 1.2
 			if min_z < c.z:
 				min_z = c.z
 				perp_rotated = c
@@ -229,7 +232,7 @@ class LESection:
 			#var tmp = (360.0 / spoke_count) * i
 			var c = v_perp.rotated(dir_norm, deg2rad( angle + (360.0 / spoke_count) * i))
 			c = c.normalized()
-			c *= 0.2
+			c *= self.options['tube-radius']
 			self.spokes.append(c)
 	
 	func make_ray():
@@ -253,22 +256,23 @@ class LESection:
 			self.inters.append(inter)
 		
 	func render(surface_tool):
-		surface_tool.add_color(self.color)
-		surface_tool.add_vertex(self.point)
-		surface_tool.add_color(self.color)
-		surface_tool.add_vertex(self.get_end())
+		if self.options['render-skeleton']:
+			surface_tool.add_color(self.color)
+			surface_tool.add_vertex(self.point)
+			surface_tool.add_color(self.color)
+			surface_tool.add_vertex(self.get_end())
 		
 		#
 		# rotate the projected circle
-		surface_tool.add_color(Color8(0,0,255))
-		surface_tool.add_vertex(self.get_end())
-		surface_tool.add_color(Color8(0,0,255))
-		surface_tool.add_vertex(self.get_end() + self.tmp_v_perp)
+#		surface_tool.add_color(Color8(0,0,255))
+#		surface_tool.add_vertex(self.get_end())
+#		surface_tool.add_color(Color8(0,0,255))
+#		surface_tool.add_vertex(self.get_end() + self.tmp_v_perp)
 		#
-		surface_tool.add_color(Color8(0,0,0))
-		surface_tool.add_vertex(self.get_end())
-		surface_tool.add_color(Color8(0,0,0))
-		surface_tool.add_vertex(self.get_end() + self.tmp_new_angle)
+#		surface_tool.add_color(Color8(0,0,0))
+#		surface_tool.add_vertex(self.get_end())
+#		surface_tool.add_color(Color8(0,0,0))
+#		surface_tool.add_vertex(self.get_end() + self.tmp_new_angle)
 		#
 		#
 		#
@@ -317,8 +321,10 @@ class LESection:
 
 
 class LE:
-	var options = {}
-	var spoke_count = 4
+	var options = {
+		'tube-x-ray': true
+	}
+	var spoke_count = 22
 	var sections = []
 	
 
@@ -355,17 +361,25 @@ class LE:
 		for i in range(5):
 	
 			var opts = {
-					'angle': -7,
-					'sweep': 0,
-					'length': 0.5
-				}
+				'angle': -7,
+				'sweep': 0,
+				'length': 0.5,
+				'render-spokes': false,
+				'render-rays': false,
+				'render-inters': true
+			}
+			
+			if i == 2:
+				opts['tube-radius'] = 0.1
+				opts['sweep'] = 90
+				opts['angle'] = -45
 				
 			self.add_section(
 				self.sections[-1],
 				angle,
 				sweep,
 				opts
-				)
+			)
 			
 			angle += opts['angle']
 		
@@ -382,11 +396,8 @@ class LE:
 			start,
 			direction,
 			self,
-			{
-				'render-spokes': false,
-				'render-rays': false,
-				'render-inters': true
-			})
+			options
+		)
 		
 		var v_perp = section.get_perpendicular_vec()
 		var plane = previous_section.get_mid_angle(section)
@@ -410,11 +421,15 @@ class LE:
 		for s in self.sections:
 			s.render(surface_tool)
 		
-		for i in range(self.sections.size()-1):
-			for j in range(self.spoke_count):
-				surface_tool.add_color(Color8(255,0,255))
-				surface_tool.add_vertex(self.sections[i+0].inters[j])
-				surface_tool.add_vertex(self.sections[i+1].inters[j])
+		if self.options['tube-x-ray']:
+			for i in range(self.sections.size()-1):
+				for j in range(self.spoke_count):
+					if j==0:
+						surface_tool.add_color(Color8(255,0,255))
+					else:
+						surface_tool.add_color(Color8(70,70,70))
+					surface_tool.add_vertex(self.sections[i+0].inters[j])
+					surface_tool.add_vertex(self.sections[i+1].inters[j])
 
 
 
