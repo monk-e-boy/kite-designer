@@ -319,11 +319,6 @@ class LESection:
 class LE:
 	var options = {}
 	var spoke_count = 4
-	
-	var sec1 = null
-	var sec2 = null
-	var sec3 = null
-	
 	var sections = []
 	
 
@@ -340,7 +335,7 @@ class LE:
 		var rot_z = -25.0
 		var rot_y = 45.0
 	
-		self.sec1 = LESection.new(
+		var sec1 = LESection.new(
 			point,
 			direction,
 			self,
@@ -351,63 +346,29 @@ class LE:
 			})
 		# The intersection plane at the centre of the kite is a special case:
 		var mid_plane = KPlane.new(Vector3(0,1,0), Vector3(0,0,1), Vector3(0,0,-1))
-		self.sec1.intersects(mid_plane)
+		sec1.intersects(mid_plane)
 		
-		var deg2 = -7
+		self.sections.append(sec1)
+	
 		var sweep = 25
-		#var deg3 = -7
-		var anim_length = 0.3
-		var length = 0.8+(sin(anim_length)*0.2)
-		var tmp = Vector3(0.5,0,0)
-		tmp = tmp.rotated(Vector3(0,1,0), deg2rad(sweep))
-		tmp = tmp.rotated(Vector3(0,0,1), deg2rad(deg1) + deg2rad(deg2)) # follows the previous angles
-		
-		self.sec2 = LESection.new(
-			self.sec1.get_end(),
-			tmp,
-			self,
-			{
-				'render-spokes': false,
-				'render-rays': false,
-				'render-inters': true
-			})
-		self.sec2.color = Color8(255,255,255)
-		var plane = sec1.get_mid_angle(sec2)
-		self.sec2.intersects(plane)
-		
+		var angle = deg1
+		for i in range(5):
 	
-		#var sec3_start = sec2.point+sec2.direction # line+direction+tmp
-		var sec3_start = sec2.get_end()
-		var sec3_direction = tmp * 0.5
+			var opts = {
+					'angle': -7,
+					'sweep': 0,
+					'length': 0.5
+				}
+				
+			self.add_section(
+				self.sections[-1],
+				angle,
+				sweep,
+				opts
+				)
+			
+			angle += opts['angle']
 		
-		var deg1a = -7
-		var deg2a = sin(12) * 90
-		
-		# sec3_direction = sec3_direction.rotated(Vector3(0,0,1), deg2rad(1)) # <-- HACK HACK HACK
-		sec3_direction = sec3_direction.rotated(Vector3(0,0,1),
-		deg2rad(deg1) + deg2rad(deg2) + deg2rad(deg1a)) # <-- HACK HACK HACK
-		
-		#sec3_direction = sec3_direction.rotated(Vector3(0,1,0), deg2rad(deg2a))
-	
-		self.sec3 = LESection.new(
-			sec3_start,
-			sec3_direction,
-			self,
-			{
-				'render-spokes': false,
-				'render-rays': false,
-				'render-inters': true
-			})
-		
-		var v_perp = sec3.get_perpendicular_vec()
-		plane = sec2.get_mid_angle(sec3)
-		self.sec3.intersects(plane)
-		
-		self.add_section(sec3, deg1+deg2+deg1a, sweep, {
-			'angle': -14,
-			'sweep': 5,
-			'length': 0.5
-		})
 		
 	func add_section(previous_section, angle, sweep, options):
 		
@@ -446,20 +407,15 @@ class LE:
 		#var deg2 = sin(angle2) * 120
 		#var deg3 = 90 + sin(angle3) * 90
 		
-		self.sec1.render(surface_tool)
-		self.sec2.render(surface_tool)
-		self.sec3.render(surface_tool)
-		self.sections[0].render(surface_tool)
+		for s in self.sections:
+			s.render(surface_tool)
 		
-		for i in range(self.spoke_count):
-			surface_tool.add_color(Color8(255,0,255))
-			surface_tool.add_vertex(self.sec1.inters[i])
-			surface_tool.add_vertex(self.sec2.inters[i])
-			
-		for i in range(self.spoke_count):
-			surface_tool.add_color(Color8(255,0,255))
-			surface_tool.add_vertex(self.sec2.inters[i])
-			surface_tool.add_vertex(self.sec3.inters[i])
+		for i in range(self.sections.size()-1):
+			for j in range(self.spoke_count):
+				surface_tool.add_color(Color8(255,0,255))
+				surface_tool.add_vertex(self.sections[i+0].inters[j])
+				surface_tool.add_vertex(self.sections[i+1].inters[j])
+
 
 
 var leading_edge = null
