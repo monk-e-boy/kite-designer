@@ -69,6 +69,7 @@ class KPlane:
 		
 		var c = Color8(255,255,0)
 		surface_tool.add_color(c)
+		# cross
 		surface_tool.add_vertex(v2)
 		surface_tool.add_vertex(v2+p1)
 		
@@ -81,6 +82,7 @@ class KPlane:
 		surface_tool.add_vertex(v2)
 		surface_tool.add_vertex(v2+p4)
 		
+		# square
 		surface_tool.add_vertex(v2+p1)
 		surface_tool.add_vertex(v2+p2)
 		surface_tool.add_vertex(v2+p2)
@@ -90,6 +92,15 @@ class KPlane:
 		surface_tool.add_vertex(v2+p4)
 		surface_tool.add_vertex(v2+p1)
 
+class LE:
+	var options = {}
+	var spoke_count = 3
+	
+	func _init(options):
+		for key in options:
+			self.options[key] = options[key]
+			
+	
 
 class LESection:
 	var point = Vector3(0,0,0)
@@ -337,6 +348,8 @@ func _process(delta):
 	surface_tool.set_material(mat)
 	
 	
+	var leading_edge = LE.new({})
+	
 	# waggle the angle between -90 and +90 degrees
 #	angle += 0.014
 #	angle2 += 0.012
@@ -355,12 +368,8 @@ func _process(delta):
 	var rot_z = -25.0
 	var rot_y = 45.0
 	
-
-	
 	var sec1 = LESection.new(point, direction, [])
 	sec1.render(surface_tool)
-	
-	
 	
 	deg1 = 0
 	deg2 = 30
@@ -372,15 +381,12 @@ func _process(delta):
 		sec1.get_end(),
 		tmp,
 		{
-			'render-spokes': true,
+			'render-spokes': false,
 			'render-rays': false,
-			'render-inters': false
+			'render-inters': true
 		})
 	sec2.color = Color8(255,255,255)
-	
-	var plane = sec1.get_mid_angle(sec2, surface_tool)
-	#plane.render(surface_tool)
-	
+	var plane = sec1.get_mid_angle(sec2, surface_tool)	
 	sec2.intersects(plane)
 	sec2.render(surface_tool)
 	
@@ -395,101 +401,26 @@ func _process(delta):
 	sec3_direction = sec3_direction.rotated(Vector3(0,0,1), deg2rad(deg1a)) # <-- HACK HACK HACK
 	sec3_direction = sec3_direction.rotated(Vector3(0,1,0), deg2rad(deg2a))
 	
-	#var sec3_end = sec3_start+sec3_e # line+direction+sec3_e
-
-	#sec3_start = Vector3(0,0,0)
 	var sec3 = LESection.new(
 		sec3_start,
 		sec3_direction,
 		{
-			'render-spokes': true,
+			'render-spokes': false,
 			'render-rays': false,
-			'render-inters': false
+			'render-inters': true
 		})
 	
-	
 	var v_perp = sec3.get_perpendicular_vec()
-	
 	plane = sec2.get_mid_angle(sec3, surface_tool)
-	#plane.render(surface_tool)
-	
 	sec3.intersects(plane)
 	sec3.render(surface_tool)
 	
 	
-#	var inters = []
-#	
-#	var count = 5
-#	for i in range(1, count+1):
-#		var dir_norm = sec3_direction.normalized()
-#		var c = v_perp.rotated(dir_norm, deg2rad((360.0 / count) * i))
-#		
-#		c = c.normalized()
-#		c *= 0.2
-#		if false:
-#			# draw spokes
-#			surface_tool.add_color(Color8(255,0,0))
-#			surface_tool.add_vertex(sec3_start + sec3_direction)
-#			surface_tool.add_color(Color8(255,0,0))
-#			surface_tool.add_vertex(sec3_start + sec3_direction + c)
-#		
-#		# flip the direction to point back towards the join
-#		# make it long enough to pierce the plane (* -3)
-#		# it is possible that the ray and plane do not intersect (strange angles)
-#		var ray = sec3_direction * -3
-#		if false:
-#			# draw rays
-#			surface_tool.add_color(Color8(253,71,3))
-#			surface_tool.add_vertex(sec3_start + sec3_direction + c)
-#			surface_tool.add_color(Color8(253,71,3))
-#			surface_tool.add_vertex(sec3_start + sec3_direction + c + ray)
-#		
-#		var inter = plane.intersects_ray(
-#			sec3_start + sec3_direction + c,
-#			ray
-#		)
-			
-#		if false:
-#			surface_tool.add_vertex(c)
-#			surface_tool.add_vertex(inter)
-#		inters.append(inter)
-
-	var tube_spokes = false
-	var tube_outline = false
+	for i in range(leading_edge.spoke_count):
+		surface_tool.add_color(Color8(255,0,255))
+		surface_tool.add_vertex(sec2.inters[i])
+		surface_tool.add_vertex(sec3.inters[i])
 	
-#	if tube_spokes:
-#		for i in range(inters.size()-1):
-#			if inters[i] and inters[i+1]:
-#				surface_tool.add_color(Color8(255,0,0))
-#				surface_tool.add_vertex(inters[i])
-#				surface_tool.add_color(Color8(255,0,0))
-#				surface_tool.add_vertex(inters[i+1])
-#			
-#		if inters[0] and inters[-1]:
-#			surface_tool.add_color(Color8(255,0,0))
-#			surface_tool.add_vertex(inters[0])
-#			surface_tool.add_color(Color8(255,0,0))
-#			surface_tool.add_vertex(inters[-1])
-#
-#	if tube_outline:
-#		for i in range(inters.size()-1):
-#			if inters[i] and inters[i+1]:
-#				surface_tool.add_color(Color8(255,0,0))
-#				surface_tool.add_vertex(inters[i])
-#				surface_tool.add_color(Color8(255,0,0))
-#				surface_tool.add_vertex(inters[i+1])
-#			
-#		if inters[0] and inters[-1]:
-#			surface_tool.add_color(Color8(255,0,0))
-#			surface_tool.add_vertex(inters[0])
-#			surface_tool.add_color(Color8(255,0,0))
-#			surface_tool.add_vertex(inters[-1])
-			
-	#
-	#
-#	section(surface_tool, intersects, rot_z)
-	#
-	#
 	
 	#surface_tool.generate_normals()
 	surface_tool.commit(mesh)
