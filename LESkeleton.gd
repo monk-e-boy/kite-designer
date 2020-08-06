@@ -97,6 +97,8 @@ class KPlane:
 class LESection:
 	var point = Vector3(0,0,0)
 	var direction = Vector3(0,0,0)
+	var prof_conn = Vector3(0,0,0)
+	var seam = Vector3(0,0,0)
 	var color = Color8(147, 0, 150)
 	var spokes = []
 	var ray = Vector3(0,0,0)
@@ -105,6 +107,7 @@ class LESection:
 	var inters = []
 	var parent = null
 	var options = {
+		'length': 1,
 		'tube-radius': 0.2,
 		'render-spokes': false,
 		'render-rays': false,
@@ -115,12 +118,38 @@ class LESection:
 	var tmp_v_perp = 0
 	var tmp_new_angle = 0
 	
-	func _init(point, direction, parent, options):
+	func _init(point, parent, options):
 		self.point = point
-		self.direction = direction
-		self.parent = parent
+		
 		for key in options:
 			self.options[key] = options[key]
+		
+		var direction = Vector3(self.options['length'],0,0)
+		# pivot around vertical to sweep back
+		direction = direction.rotated(Vector3(0,1,0), deg2rad(self.options['sweep']))
+		# pivot around Z to angle down (mid is horizontal, tips are almost vertical)
+		direction = direction.rotated(Vector3(0,0,1), deg2rad(self.options['angle']))
+
+		# apply the same transforms to the profile connection point on the LE
+		# tube this is marked for sewing
+		var prof_conn = Vector3(0,options['tube-radius'],0)
+		prof_conn = prof_conn.rotated(Vector3(1,0,0), deg2rad(self.options['profile-connection-angle']))
+		prof_conn = prof_conn.rotated(Vector3(0,1,0), deg2rad(self.options['sweep']))
+		prof_conn = prof_conn.rotated(Vector3(0,0,1), deg2rad(self.options['angle']))
+		
+		# apply the same transforms to the LE seam - this is used when we
+		# flatten the LE tube. The seam is where we 'cut' the tube before
+		# flattening it
+		var seam = Vector3(0,options['tube-radius'],0)
+		seam = seam.rotated(Vector3(1,0,0), deg2rad(self.options['seam-angle']))
+		seam = seam.rotated(Vector3(0,1,0), deg2rad(self.options['sweep']))
+		seam = seam.rotated(Vector3(0,0,1), deg2rad(self.options['angle']))
+		
+		self.direction = direction
+		self.prof_conn = prof_conn
+		self.seam = seam
+		self.parent = parent
+		
 		#
 		self.make_spokes()
 		self.make_ray()
@@ -227,10 +256,17 @@ class LESection:
 		#
 		#
 		#
+		
+		#
+		# TEMP investigations - - - ignore above
+		#
+		
+		v_perp = self.seam
 		var spoke_count = self.parent.get_spoke_count()
-		for i in range(1, spoke_count+1):
+		for i in range(spoke_count):
 			#var tmp = (360.0 / spoke_count) * i
-			var c = v_perp.rotated(dir_norm, deg2rad( angle + (360.0 / spoke_count) * i))
+			#var c = v_perp.rotated(dir_norm, deg2rad( angle + (360.0 / spoke_count) * i))
+			var c = v_perp.rotated(dir_norm, deg2rad((360.0 / spoke_count) * i))
 			c = c.normalized()
 			c *= self.options['tube-radius']
 			self.spokes.append(c)
@@ -261,7 +297,7 @@ class LESection:
 			surface_tool.add_vertex(self.point)
 			surface_tool.add_color(self.color)
 			surface_tool.add_vertex(self.get_end())
-		
+			
 		#
 		# rotate the projected circle
 #		surface_tool.add_color(Color8(0,0,255))
@@ -283,11 +319,22 @@ class LESection:
 		
 		# spokes of the LE tube radius
 		if self.options['render-spokes']:
+			# seam vector - just a little white nub
+			surface_tool.add_color(Color8(255,255,255))
+			surface_tool.add_vertex(self.get_end()+self.seam)
+			surface_tool.add_color(Color8(255,255,255))
+			surface_tool.add_vertex(self.get_end()+(self.seam*1.1))
+
+			var first = true
 			for spoke in self.spokes:
 				# draw spokes
-				surface_tool.add_color(Color8(255,0,0))
+				var c = Color8(255,0,0)
+				if first:
+					c = Color8(0,0,0) # the seam spoke
+					first = false
+				surface_tool.add_color(c)
 				surface_tool.add_vertex(self.get_end())
-				surface_tool.add_color(Color8(255,0,0))
+				surface_tool.add_color(c)
 				surface_tool.add_vertex(self.get_end() + spoke)
 		
 		# the rays from the spokes we project onto the plane
@@ -315,6 +362,12 @@ class LESection:
 				surface_tool.add_vertex(self.inters[0])
 				surface_tool.add_color(Color8(255,0,0))
 				surface_tool.add_vertex(self.inters[-1])
+			
+			## draw the LE + Profile join angle
+			#var tmp = Vector3()
+			#surface_tool.add_color(Color8(255,255,0))
+			#surface_tool.add_vertex(self.point)
+			
 
 
 
@@ -324,7 +377,8 @@ class LE:
 	var options = {
 		'tube-x-ray': true
 	}
-	var spoke_count = 22
+	var spoke_count = 7
+	var seam_angle = 0
 	var sections = []
 	
 
@@ -340,15 +394,22 @@ class LE:
 		var x = Vector3(1,0,0)
 		var rot_z = -25.0
 		var rot_y = 45.0
-	
+		
+		
 		var sec1 = LESection.new(
 			point,
-			direction,
 			self,
 			{
+				'length': 0.5,
+				'profile-connection-angle': 270,
+				'seam-angle': seam_angle,
+				'tube-radius': 0.2,
+				'sweep': 5,
+				'angle': -5,
 				'render-spokes': false,
 				'render-rays': false,
-				'render-inters': true
+				'render-inters': true,
+				'render-skeleton': false
 			})
 		# The intersection plane at the centre of the kite is a special case:
 		var mid_plane = KPlane.new(Vector3(0,1,0), Vector3(0,0,1), Vector3(0,0,-1))
@@ -360,41 +421,47 @@ class LE:
 		var angle = deg1
 		for i in range(5):
 	
+			# read from config file
 			var opts = {
 				'angle': -7,
-				'sweep': 0,
+				'sweep': 20,
 				'length': 0.5,
+				'profile-connection-angle': 270,
+				'seam-angle': seam_angle,
+				'tube-radius': 0.2,
 				'render-spokes': false,
 				'render-rays': false,
-				'render-inters': true
+				'render-inters': true,
+				'render-skeleton': false
 			}
 			
-			if i == 2:
+			# these are relative to previous changes in angle and swwp
+			opts['angle'] += angle
+			#opts['sweep'] += sweep
+			
+			if i == 1:
 				opts['tube-radius'] = 0.1
-				opts['sweep'] = 90
-				opts['angle'] = -45
+		#		opts['sweep'] = 90
+		#		opts['angle'] = -45
 				
 			self.add_section(
 				self.sections[-1],
-				angle,
-				sweep,
 				opts
 			)
 			
 			angle += opts['angle']
+			sweep += opts['sweep']
 		
 		
-	func add_section(previous_section, angle, sweep, options):
+	func add_section(previous_section, options):
 		
-		var direction = Vector3(options['length'],0,0)
-		direction = direction.rotated(Vector3(0,1,0), deg2rad(sweep + options['sweep']))
-		direction = direction.rotated(Vector3(0,0,1), deg2rad(angle + options['angle']))
+		# var direction = Vector3(options['length'],0,0)
+		# direction = direction.rotated(Vector3(0,1,0), deg2rad(sweep + options['sweep']))
+		# direction = direction.rotated(Vector3(0,0,1), deg2rad(angle + options['angle']))
 		var start = previous_section.get_end()
 		
-	
 		var section = LESection.new(
 			start,
-			direction,
 			self,
 			options
 		)
