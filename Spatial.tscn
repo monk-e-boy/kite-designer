@@ -435,6 +435,12 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
+[node name="btnReload" type="Button" parent="GUI/GridContainer"]
+margin_top = 68.0
+margin_right = 135.0
+margin_bottom = 88.0
+text = "Reload File"
+
 [node name="Node" type="Node" parent="."]
 
 [node name="Profiles" type="MeshInstance" parent="Node"]
@@ -460,3 +466,4 @@ script = SubResource( 12 )
 script = ExtResource( 5 )
 [connection signal="toggled" from="GUI/GridContainer/CheckButton" to="Node/Profiles/Skin" method="_on_CheckButton_toggled"]
 [connection signal="pressed" from="GUI/GridContainer/Button" to="Node/Profiles/Skin/SkinOutline" method="_on_Button_pressed"]
+[connection signal="pressed" from="GUI/GridContainer/btnReload" to="Node/Profiles" method="_on_btnReload_pressed"]

@@ -113,7 +113,6 @@ var kite = {
 }
 
 var atts = []
-
 var profiles = []
 
 class Profile:
@@ -381,3 +380,11 @@ func prof2(st:SurfaceTool, profile):
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 #func _process(delta):
 #	pass
+
+
+func _on_btnReload_pressed():
+	print("Reloading file user://kite.txt")
+	atts = []
+	profiles = []
+	_init()
+	_ready()
