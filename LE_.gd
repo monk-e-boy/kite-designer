@@ -37,7 +37,7 @@ func _init(options):
 			'tube-radius': 0.2,
 			'sweep': 5,
 			'angle': -5,
-			'render-spokes': false,
+			'render-spokes': true,
 			'render-rays': false,
 			'render-inters': true,
 			'render-skeleton': false
@@ -60,10 +60,10 @@ func _init(options):
 			'profile-connection-angle': 270,
 			'seam-angle': seam_angle,
 			'tube-radius': 0.2,
-			'render-spokes': false,
+			'render-spokes': true,
 			'render-rays': false,
 			'render-inters': true,
-			'render-skeleton': false
+			'render-skeleton': true
 		}
 		
 		# these are relative to previous changes in angle and swwp

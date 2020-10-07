@@ -21,7 +21,7 @@ var options = {
 	'render-rays': false,
 	'render-inters': false,
 	'render-plane': false,
-	'render-skeleton': false
+	'render-skeleton': true
 }
 var tmp_v_perp = 0
 var tmp_new_angle = 0
@@ -32,9 +32,15 @@ var is_highlighted = false
 
 func _init(point, parent, options):
 	self.point = point
-	
+	self.parent = parent
+
+	# merge options with defaults:	
 	for key in options:
 		self.options[key] = options[key]
+		
+	self.update()
+		
+func update():
 	
 	var direction = Vector3(self.options['length'],0,0)
 	# pivot around vertical to sweep back
@@ -60,7 +66,6 @@ func _init(point, parent, options):
 	self.direction = direction
 	self.prof_conn = prof_conn
 	self.seam = seam
-	self.parent = parent
 	
 	#
 	self.make_spokes()
@@ -173,7 +178,7 @@ func make_spokes():
 	#
 	# TEMP investigations - - - ignore above
 	#
-	
+	self.spokes = []
 	v_perp = self.seam
 	var spoke_count = self.parent.get_spoke_count()
 	for i in range(spoke_count):
@@ -208,6 +213,12 @@ func intersects(plane):
 func set_highlighted(h):
 	self.is_highlighted = h
 	self.options['render-plane'] = h
+	
+func set_angle(a):
+	#self.options['angle'] = a
+	self.options['tube-radius'] = a
+	# rebuild the section (bone, joint, inters, etc)
+	self.update()
 	
 func render(surface_tool):
 	if self.options['render-skeleton']:

@@ -147,7 +147,12 @@ func _on_btnLEPrev_pressed():
 	
 func update_highlighted():
 	# TODO emit a signal?
-	var lbl = get_node("/root/Spatial/GUI/GridContainer/HBoxContainer/lblLEPos") # lblLEPos.
+	var lbl = get_node("/root/Spatial/GUI/GridContainer/VBoxContainer/HBoxContainer/lblLEPos") # lblLEPos.
 	lbl.text = str(le_joint_highlight)
 	#self.LE.sections[tmp].options['render-plane'] = true
 	self.leading_edge.get_section(le_joint_highlight).set_highlighted(true)
+
+
+func _on_sldAngle_value_changed(value):
+	self.leading_edge.get_section(le_joint_highlight).set_angle(value)
+	self._process(1)
