@@ -25,6 +25,10 @@ var options = {
 }
 var tmp_v_perp = 0
 var tmp_new_angle = 0
+var inter_colour = Color8(70,70,70)
+var inter_colour_highlighted = Color8(255,0,0)
+var is_highlighted = false
+
 
 func _init(point, parent, options):
 	self.point = point
@@ -200,6 +204,10 @@ func intersects(plane):
 		)
 	
 		self.inters.append(inter)
+
+func set_highlighted(h):
+	self.is_highlighted = h
+	self.options['render-plane'] = h
 	
 func render(surface_tool):
 	if self.options['render-skeleton']:
@@ -258,19 +266,20 @@ func render(surface_tool):
 	
 	# the resulting LE tube end after projection
 	if self.options['render-inters'] and self.inters.size():
+		var c = inter_colour_highlighted if self.is_highlighted else inter_colour
 		for i in range(inters.size()-1):
 			# sometimes we don't get an intersect between the ray and
 			# the plane (rare - see comment above)
 			if inters[i] and inters[i+1]:
-				surface_tool.add_color(Color8(255,0,0))
+				surface_tool.add_color(c)
 				surface_tool.add_vertex(self.inters[i])
-				surface_tool.add_color(Color8(255,0,0))
+				surface_tool.add_color(c)
 				surface_tool.add_vertex(self.inters[i+1])
 			
 		if inters[0] and inters[-1]:
-			surface_tool.add_color(Color8(255,0,0))
+			surface_tool.add_color(c)
 			surface_tool.add_vertex(self.inters[0])
-			surface_tool.add_color(Color8(255,0,0))
+			surface_tool.add_color(c)
 			surface_tool.add_vertex(self.inters[-1])
 		
 		## draw the LE + Profile join angle

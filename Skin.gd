@@ -452,4 +452,4 @@ func flatten_tri_b(triangle):
 func _on_CheckButton_toggled(button_pressed):
 	var tmp = get_node("/root/Spatial/GUI/GridContainer/CheckButton")
 	self.visible = button_pressed
-	print(self.visible)
+	print("Skin visible:", self.visible)

@@ -8,7 +8,7 @@ const LESection = preload("LESection.gd")
 var options = {
 	'tube-x-ray': true
 }
-var spoke_count = 4
+var spoke_count = 5
 var seam_angle = 0
 var sections = []
 
@@ -106,6 +106,9 @@ func add_section(previous_section, options):
 
 func get_spoke_count():
 	return self.spoke_count
+	
+func get_section(i):
+	return self.sections[i]
 
 func render(surface_tool):
 	# waggle the angle between -90 and +90 degrees
@@ -123,6 +126,7 @@ func render(surface_tool):
 		for i in range(self.sections.size()-1):
 			for j in range(self.spoke_count):
 				if j==0:
+					# SEAM is PURPLE
 					surface_tool.add_color(Color8(255,0,255))
 				else:
 					surface_tool.add_color(Color8(70,70,70))

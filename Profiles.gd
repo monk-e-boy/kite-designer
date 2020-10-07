@@ -205,9 +205,12 @@ func load_atts():
 				print(tmp)
 				prof_att[tmp[0]] = float(tmp[1])
 		
+		# READING attributes 
 		if at and line.length()==0:
-			atts.append(prof_att)
-			prof_att = default.duplicate()
+			# check we haven't had a extra blank line (file format error)
+			if prof_att.values() != default.values():
+				atts.append(prof_att)
+				prof_att = default.duplicate()
 			
 		if at and line.find("\t") == -1 and line.length()>0:
 			at = false
@@ -217,7 +220,12 @@ func load_atts():
 			at = true
 			prof_att = default.duplicate()
 			print("proflie attributes:")
-			
+	
+	# if the last profile definition doesn't have a BLANK LINE
+	# after it, it's not saved in the code above, so save it here
+	if prof_att.values() != default.values():
+		atts.append(prof_att)
+	
 	file.close()
 
 
@@ -388,3 +396,4 @@ func _on_btnReload_pressed():
 	profiles = []
 	_init()
 	_ready()
+	self.get_child(0)._ready()

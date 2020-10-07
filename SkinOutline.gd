@@ -4,7 +4,7 @@ export(SpatialMaterial) var material
 var _go = false
 
 func _ready():
-	pass
+	self.visible = false
 	
 func go():
 	var surface_tool = SurfaceTool.new()
@@ -124,3 +124,7 @@ func save():
 
 func _on_Button_pressed():
 	self.save()
+
+
+func _on_chkFlatten_toggled(button_pressed):
+	self.visible = button_pressed
