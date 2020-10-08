@@ -151,8 +151,17 @@ func update_highlighted():
 	lbl.text = str(le_joint_highlight)
 	#self.LE.sections[tmp].options['render-plane'] = true
 	self.leading_edge.get_section(le_joint_highlight).set_highlighted(true)
+	
+	var txt = get_node("/root/Spatial/GUI/GridContainer/VBoxContainer/PanelContainer/GridContainer/txtAngle")
+	txt.text = str(self.leading_edge.get_section(le_joint_highlight).get_angle())
 
 
 func _on_sldAngle_value_changed(value):
 	self.leading_edge.get_section(le_joint_highlight).set_angle(value)
 	self._process(1)
+	#var txt = get_node("/root/Spatial/GUI/GridContainer/VBoxContainer/PanelContainer/GridContainer/txtAngle")
+	#txt.text = value
+	
+func _on_sldAngle2_value_changed(value):
+	self.leading_edge.get_section(le_joint_highlight).set_angle2(value)
+	self.update_highlighted()

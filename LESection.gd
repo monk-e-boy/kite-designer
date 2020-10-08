@@ -47,6 +47,7 @@ func update():
 	direction = direction.rotated(Vector3(0,1,0), deg2rad(self.options['sweep']))
 	# pivot around Z to angle down (mid is horizontal, tips are almost vertical)
 	direction = direction.rotated(Vector3(0,0,1), deg2rad(self.options['angle']))
+	print(self.options['angle'])
 
 	# apply the same transforms to the profile connection point on the LE
 	# tube this is marked for sewing
@@ -219,6 +220,14 @@ func set_angle(a):
 	self.options['tube-radius'] = a
 	# rebuild the section (bone, joint, inters, etc)
 	self.update()
+	
+func set_angle2(a):
+	self.options['angle'] = a
+	# rebuild the section (bone, joint, inters, etc)
+	self.update()
+
+func get_angle():
+	return self.options['angle']
 	
 func render(surface_tool):
 	if self.options['render-skeleton']:
