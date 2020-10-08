@@ -57,7 +57,10 @@ func _process_transformation(delta: float):
 	t.set_euler(_rotation);
 	_anchor_node.transform.basis = Basis(t)
 
-func _input(event):
+
+# IGNORE all events from the GUI:
+#func _input(event):
+func _unhandled_input(event):
 	if event is InputEventScreenDrag:
 		_process_touch_rotation_event(event)
 	elif event is InputEventMouseMotion:
