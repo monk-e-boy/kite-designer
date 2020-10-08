@@ -29,10 +29,21 @@ var inter_colour = Color8(70,70,70)
 var inter_colour_highlighted = Color8(255,0,0)
 var is_highlighted = false
 
+var prev_section = false
 
-func _init(point, parent, options):
-	self.point = point
+
+func _init(point, parent, options, previous_section):
+	if previous_section:
+		self.point = previous_section.get_end()
+	else:
+		#
+		# HACK for the very first section that needs a point
+		# TODO - fix this
+		#
+		self.point = point
+		
 	self.parent = parent
+	self.prev_section = previous_section
 
 	# merge options with defaults:	
 	for key in options:
@@ -45,16 +56,22 @@ func update():
 	var direction = Vector3(self.options['length'],0,0)
 	# pivot around vertical to sweep back
 	direction = direction.rotated(Vector3(0,1,0), deg2rad(self.options['sweep']))
+	
+	
 	# pivot around Z to angle down (mid is horizontal, tips are almost vertical)
-	direction = direction.rotated(Vector3(0,0,1), deg2rad(self.options['angle']))
-	print(self.options['angle'])
+	var angle = self.get_calculated_angle()
+	direction = direction.rotated(Vector3(0,0,1), deg2rad(angle))
+	print("User set:", self.options['angle'], " calculated", angle)
+
+
 
 	# apply the same transforms to the profile connection point on the LE
 	# tube this is marked for sewing
 	var prof_conn = Vector3(0,options['tube-radius'],0)
 	prof_conn = prof_conn.rotated(Vector3(1,0,0), deg2rad(self.options['profile-connection-angle']))
 	prof_conn = prof_conn.rotated(Vector3(0,1,0), deg2rad(self.options['sweep']))
-	prof_conn = prof_conn.rotated(Vector3(0,0,1), deg2rad(self.options['angle']))
+	#prof_conn = prof_conn.rotated(Vector3(0,0,1), deg2rad(self.options['angle']))
+	prof_conn = prof_conn.rotated(Vector3(0,0,1), deg2rad(self.get_calculated_angle()))
 	
 	# apply the same transforms to the LE seam - this is used when we
 	# flatten the LE tube. The seam is where we 'cut' the tube before
@@ -62,7 +79,8 @@ func update():
 	var seam = Vector3(0,options['tube-radius'],0)
 	seam = seam.rotated(Vector3(1,0,0), deg2rad(self.options['seam-angle']))
 	seam = seam.rotated(Vector3(0,1,0), deg2rad(self.options['sweep']))
-	seam = seam.rotated(Vector3(0,0,1), deg2rad(self.options['angle']))
+	#seam = seam.rotated(Vector3(0,0,1), deg2rad(self.options['angle']))
+	seam = seam.rotated(Vector3(0,0,1), deg2rad(self.get_calculated_angle()))
 	
 	self.direction = direction
 	self.prof_conn = prof_conn
@@ -72,7 +90,16 @@ func update():
 	self.make_spokes()
 	self.make_ray()
 	#
-	
+
+func get_calculated_angle():
+	# HACK - this should dissapear when I fix how the first section
+	#        has a previous section ... maybe?	
+	if self.prev_section:
+		return self.options['angle'] + self.prev_section.get_calculated_angle()
+	else:
+		return self.options['angle']
+
+
 #func get_mid_angle(sec: LESection):
 func get_mid_angle(sec):
 	var a = self.point
@@ -201,6 +228,7 @@ func make_ray():
 	
 #func intersects(plane:KPlane):
 func intersects(plane):
+	self.inters = []
 	# let's keep a reference to the plane
 	self.plane = plane
 	for spoke in self.spokes:

@@ -164,4 +164,5 @@ func _on_sldAngle_value_changed(value):
 	
 func _on_sldAngle2_value_changed(value):
 	self.leading_edge.get_section(le_joint_highlight).set_angle2(value)
+	self.leading_edge.update_sections()
 	self.update_highlighted()

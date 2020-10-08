@@ -41,7 +41,15 @@ func _init(options):
 			'render-rays': false,
 			'render-inters': true,
 			'render-skeleton': false
-		})
+		},
+		#
+		# HACK ALERT!!
+		#
+		false
+		#
+		# HACK ALERT!!
+		#
+	)
 	# The intersection plane at the centre of the kite is a special case:
 	var mid_plane = KPlane.new(Vector3(0,1,0), Vector3(0,0,1), Vector3(0,0,-1))
 	sec1.intersects(mid_plane)
@@ -67,7 +75,7 @@ func _init(options):
 		}
 		
 		# these are relative to previous changes in angle and swwp
-		opts['angle'] += angle
+		#opts['angle'] += angle
 		#opts['sweep'] += sweep
 		
 		if i == 1:
@@ -80,8 +88,8 @@ func _init(options):
 			opts
 		)
 		
-		angle += opts['angle']
-		sweep += opts['sweep']
+		#angle += opts['angle']
+		#sweep += opts['sweep']
 	
 	
 func add_section(previous_section, options):
@@ -89,20 +97,51 @@ func add_section(previous_section, options):
 	# var direction = Vector3(options['length'],0,0)
 	# direction = direction.rotated(Vector3(0,1,0), deg2rad(sweep + options['sweep']))
 	# direction = direction.rotated(Vector3(0,0,1), deg2rad(angle + options['angle']))
-	var start = previous_section.get_end()
+	#var start = previous_section.get_end()
 	
 	var section = LESection.new(
-		start,
+		false,
 		self,
-		options
+		options,
+		previous_section
 	)
 	
+	#
+	# ITEM 2
+	#
 	var v_perp = section.get_perpendicular_vec()
 	var plane = previous_section.get_mid_angle(section)
 	section.intersects(plane)
 	
 	self.sections.append(section)
 
+#
+# DIRTY HACK
+# tell each section that the end point has moved
+# TODO -
+# each section should know who it is linked
+# from - pass this in as a param
+# remove 'start pos' as a param
+# read start pos from linked_section
+# create a dummy previous_section for section_1 to link to
+# but while we wait for me to do this - hack it from here
+#
+# SEE ITEM 2 above
+#
+func update_sections():
+	
+	for i in range(1, len(self.sections)):
+		var previous_section = self.sections[i-1]
+		var start = previous_section.get_end()
+		
+		self.sections[i].point = start
+		self.sections[i].update()
+		
+		# ITEM 2 to update (see above)
+		var plane = previous_section.get_mid_angle(self.sections[i])
+		# get tube + skeleton
+		self.sections[i].intersects(plane)
+	
 
 func get_spoke_count():
 	return self.spoke_count
@@ -130,5 +169,13 @@ func render(surface_tool):
 					surface_tool.add_color(Color8(255,0,255))
 				else:
 					surface_tool.add_color(Color8(70,70,70))
-				surface_tool.add_vertex(self.sections[i+0].inters[j])
-				surface_tool.add_vertex(self.sections[i+1].inters[j])
+				# DEBUG CODE
+				var a = self.sections[i+0]
+				var b = a.inters[j]
+				
+				var c = self.sections[i+1]
+				var d = c.inters[j]
+				# END
+				if b and d:
+					surface_tool.add_vertex(b)
+					surface_tool.add_vertex(d)

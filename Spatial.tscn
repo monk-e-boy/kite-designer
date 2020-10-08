@@ -485,7 +485,7 @@ max_value = 45.0
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0 )
 
 [node name="OrbitCamera" type="Camera" parent="OrbitCameraFocus"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 3 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2.69752 )
 environment = SubResource( 2 )
 script = ExtResource( 6 )
 DEFAULT_DISTANCE = 5.0
