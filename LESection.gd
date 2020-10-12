@@ -242,6 +242,7 @@ func intersects(plane):
 func set_highlighted(h):
 	self.is_highlighted = h
 	self.options['render-plane'] = h
+	self.options['render-spokes'] = h
 	
 func set_angle(a):
 	#self.options['angle'] = a

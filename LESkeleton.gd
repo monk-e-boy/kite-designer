@@ -133,27 +133,27 @@ func tube_end(surface_tool, tube_end: Vector3, tube_angle_z: float, radius: floa
 
 #func _process(delta):
 #	pass
-
+signal update_gui_ang(le_joint, value)
 var le_joint_highlight = 0
+
 func _on_btnLENext_pressed():
-	self.leading_edge.get_section(le_joint_highlight).set_highlighted(false)
+	self.leading_edge.get_section(self.le_joint_highlight).set_highlighted(false)
 	le_joint_highlight += 1
+	if self.le_joint_highlight >= self.leading_edge.sections.size():
+		self.le_joint_highlight -= 1
 	self.update_highlighted()
 	
 func _on_btnLEPrev_pressed():
-	self.leading_edge.get_section(le_joint_highlight).set_highlighted(false)
-	le_joint_highlight -= 1
+	self.leading_edge.get_section(self.le_joint_highlight).set_highlighted(false)
+	self.le_joint_highlight -= 1
+	if self.le_joint_highlight < 0:
+		self.le_joint_highlight = 0
 	self.update_highlighted()
 	
 func update_highlighted():
-	# TODO emit a signal?
-	var lbl = get_node("/root/Spatial/GUI/GridContainer/VBoxContainer/HBoxContainer/lblLEPos") # lblLEPos.
-	lbl.text = str(le_joint_highlight)
-	#self.LE.sections[tmp].options['render-plane'] = true
 	self.leading_edge.get_section(le_joint_highlight).set_highlighted(true)
-	
-	var txt = get_node("/root/Spatial/GUI/GridContainer/VBoxContainer/PanelContainer/GridContainer/txtAngle")
-	txt.text = str(self.leading_edge.get_section(le_joint_highlight).get_angle())
+	var angle = self.leading_edge.get_section(le_joint_highlight).get_angle()
+	emit_signal("update_gui_ang", self.le_joint_highlight, angle)
 
 
 func _on_sldAngle_value_changed(value):

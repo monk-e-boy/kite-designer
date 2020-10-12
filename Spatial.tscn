@@ -1,4 +1,4 @@
-[gd_scene load_steps=24 format=2]
+[gd_scene load_steps=27 format=2]
 
 [ext_resource path="res://MyMesh.gd" type="Script" id=1]
 [ext_resource path="res://LeadingEdgeSection.tscn" type="PackedScene" id=2]
@@ -11,6 +11,9 @@
 [ext_resource path="res://Profiles.gd" type="Script" id=9]
 [ext_resource path="res://Skin.gd" type="Script" id=10]
 [ext_resource path="res://SkinOutline.gd" type="Script" id=11]
+[ext_resource path="res://txtAngle.gd" type="Script" id=12]
+[ext_resource path="res://sldAngle2.gd" type="Script" id=13]
+[ext_resource path="res://lblLEPos.gd" type="Script" id=14]
 
 [sub_resource type="ShaderMaterial" id=1]
 
@@ -425,6 +428,7 @@ margin_top = 3.0
 margin_right = 48.0
 margin_bottom = 17.0
 rect_min_size = Vector2( 16, 0 )
+script = ExtResource( 14 )
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -466,6 +470,7 @@ text = "Ang"
 margin_left = 28.0
 margin_right = 110.0
 margin_bottom = 24.0
+script = ExtResource( 12 )
 
 [node name="Label2" type="Label" parent="GUI/GridContainer/VBoxContainer/PanelContainer/GridContainer"]
 margin_top = 29.0
@@ -480,6 +485,7 @@ margin_bottom = 44.0
 size_flags_horizontal = 3
 min_value = -45.0
 max_value = 45.0
+script = ExtResource( 13 )
 
 [node name="OrbitCameraFocus" type="Spatial" parent="."]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0 )
@@ -559,3 +565,6 @@ script = ExtResource( 5 )
 [connection signal="pressed" from="GUI/GridContainer/VBoxContainer/HBoxContainer/btnLENext" to="LeadingEdge/LESkeleton" method="_on_btnLENext_pressed"]
 [connection signal="value_changed" from="GUI/GridContainer/VBoxContainer/sldAngle" to="LeadingEdge/LESkeleton" method="_on_sldAngle_value_changed"]
 [connection signal="value_changed" from="GUI/GridContainer/VBoxContainer/PanelContainer/GridContainer/sldAngle2" to="LeadingEdge/LESkeleton" method="_on_sldAngle2_value_changed"]
+[connection signal="update_gui_ang" from="LeadingEdge/LESkeleton" to="GUI/GridContainer/VBoxContainer/PanelContainer/GridContainer/txtAngle" method="_on_LESkeleton_update_gui_ang"]
+[connection signal="update_gui_ang" from="LeadingEdge/LESkeleton" to="GUI/GridContainer/VBoxContainer/HBoxContainer/lblLEPos" method="_on_LESkeleton_update_gui_ang"]
+[connection signal="update_gui_ang" from="LeadingEdge/LESkeleton" to="GUI/GridContainer/VBoxContainer/PanelContainer/GridContainer/sldAngle2" method="_on_LESkeleton_update_gui_ang"]
