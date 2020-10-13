@@ -1,4 +1,4 @@
-[gd_scene load_steps=27 format=2]
+[gd_scene load_steps=29 format=2]
 
 [ext_resource path="res://MyMesh.gd" type="Script" id=1]
 [ext_resource path="res://LeadingEdgeSection.tscn" type="PackedScene" id=2]
@@ -14,6 +14,8 @@
 [ext_resource path="res://txtAngle.gd" type="Script" id=12]
 [ext_resource path="res://sldAngle2.gd" type="Script" id=13]
 [ext_resource path="res://lblLEPos.gd" type="Script" id=14]
+[ext_resource path="res://txtSweep.gd" type="Script" id=15]
+[ext_resource path="res://sldSweep.gd" type="Script" id=16]
 
 [sub_resource type="ShaderMaterial" id=1]
 
@@ -410,7 +412,7 @@ text = "Reload File"
 [node name="VBoxContainer" type="VBoxContainer" parent="GUI/GridContainer"]
 margin_top = 136.0
 margin_right = 124.0
-margin_bottom = 238.0
+margin_bottom = 304.0
 
 [node name="HBoxContainer" type="HBoxContainer" parent="GUI/GridContainer/VBoxContainer"]
 margin_right = 124.0
@@ -439,19 +441,10 @@ margin_right = 80.0
 margin_bottom = 20.0
 text = ">>"
 
-[node name="sldAngle" type="HSlider" parent="GUI/GridContainer/VBoxContainer"]
+[node name="PanelContainer" type="PanelContainer" parent="GUI/GridContainer/VBoxContainer"]
 margin_top = 24.0
 margin_right = 124.0
-margin_bottom = 40.0
-min_value = 0.1
-max_value = 2.0
-step = 0.1
-value = 0.1
-
-[node name="PanelContainer" type="PanelContainer" parent="GUI/GridContainer/VBoxContainer"]
-margin_top = 44.0
-margin_right = 124.0
-margin_bottom = 102.0
+margin_bottom = 82.0
 
 [node name="GridContainer" type="GridContainer" parent="GUI/GridContainer/VBoxContainer/PanelContainer"]
 margin_left = 7.0
@@ -477,7 +470,7 @@ margin_top = 29.0
 margin_right = 24.0
 margin_bottom = 43.0
 
-[node name="sldAngle2" type="HSlider" parent="GUI/GridContainer/VBoxContainer/PanelContainer/GridContainer"]
+[node name="sldAngle" type="HSlider" parent="GUI/GridContainer/VBoxContainer/PanelContainer/GridContainer"]
 margin_left = 28.0
 margin_top = 28.0
 margin_right = 110.0
@@ -486,6 +479,68 @@ size_flags_horizontal = 3
 min_value = -45.0
 max_value = 45.0
 script = ExtResource( 13 )
+
+[node name="PanelContainer2" type="PanelContainer" parent="GUI/GridContainer/VBoxContainer"]
+margin_top = 86.0
+margin_right = 124.0
+margin_bottom = 168.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="GUI/GridContainer/VBoxContainer/PanelContainer2"]
+margin_left = 7.0
+margin_top = 7.0
+margin_right = 117.0
+margin_bottom = 75.0
+
+[node name="HBoxContainer" type="HBoxContainer" parent="GUI/GridContainer/VBoxContainer/PanelContainer2/VBoxContainer"]
+margin_right = 110.0
+margin_bottom = 20.0
+
+[node name="Label" type="Label" parent="GUI/GridContainer/VBoxContainer/PanelContainer2/VBoxContainer/HBoxContainer"]
+margin_top = 3.0
+margin_right = 44.0
+margin_bottom = 17.0
+text = "testing"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="GUI/GridContainer/VBoxContainer/PanelContainer2/VBoxContainer/HBoxContainer"]
+anchor_right = 0.377
+margin_left = 48.0
+margin_right = 68.0
+margin_bottom = 20.0
+alignment = 2
+
+[node name="Button" type="Button" parent="GUI/GridContainer/VBoxContainer/PanelContainer2/VBoxContainer/HBoxContainer/HBoxContainer"]
+margin_left = 41.0
+margin_right = 61.0
+margin_bottom = 20.0
+text = "+"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="GUI/GridContainer/VBoxContainer/PanelContainer2/VBoxContainer"]
+margin_top = 24.0
+margin_right = 110.0
+margin_bottom = 48.0
+
+[node name="Label" type="Label" parent="GUI/GridContainer/VBoxContainer/PanelContainer2/VBoxContainer/HBoxContainer2"]
+margin_top = 5.0
+margin_right = 41.0
+margin_bottom = 19.0
+text = "Sweep"
+
+[node name="txtSweep" type="LineEdit" parent="GUI/GridContainer/VBoxContainer/PanelContainer2/VBoxContainer/HBoxContainer2"]
+margin_left = 45.0
+margin_right = 103.0
+margin_bottom = 24.0
+script = ExtResource( 15 )
+
+[node name="sldSweep" type="HSlider" parent="GUI/GridContainer/VBoxContainer/PanelContainer2/VBoxContainer"]
+margin_top = 52.0
+margin_right = 110.0
+margin_bottom = 68.0
+min_value = -50.0
+max_value = 50.0
+script = ExtResource( 16 )
 
 [node name="OrbitCameraFocus" type="Spatial" parent="."]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0 )
@@ -563,8 +618,11 @@ script = ExtResource( 5 )
 [connection signal="pressed" from="GUI/GridContainer/btnReload" to="Node/Profiles" method="_on_btnReload_pressed"]
 [connection signal="pressed" from="GUI/GridContainer/VBoxContainer/HBoxContainer/btnLEPrev" to="LeadingEdge/LESkeleton" method="_on_btnLEPrev_pressed"]
 [connection signal="pressed" from="GUI/GridContainer/VBoxContainer/HBoxContainer/btnLENext" to="LeadingEdge/LESkeleton" method="_on_btnLENext_pressed"]
-[connection signal="value_changed" from="GUI/GridContainer/VBoxContainer/sldAngle" to="LeadingEdge/LESkeleton" method="_on_sldAngle_value_changed"]
-[connection signal="value_changed" from="GUI/GridContainer/VBoxContainer/PanelContainer/GridContainer/sldAngle2" to="LeadingEdge/LESkeleton" method="_on_sldAngle2_value_changed"]
+[connection signal="value_changed" from="GUI/GridContainer/VBoxContainer/PanelContainer/GridContainer/sldAngle" to="LeadingEdge/LESkeleton" method="_on_sldAngle2_value_changed"]
+[connection signal="value_changed" from="GUI/GridContainer/VBoxContainer/PanelContainer/GridContainer/sldAngle" to="LeadingEdge/LESkeleton" method="_on_sldAngle_value_changed"]
+[connection signal="value_changed" from="GUI/GridContainer/VBoxContainer/PanelContainer2/VBoxContainer/sldSweep" to="LeadingEdge/LESkeleton" method="_on_sldSweep_value_changed"]
 [connection signal="update_gui_ang" from="LeadingEdge/LESkeleton" to="GUI/GridContainer/VBoxContainer/PanelContainer/GridContainer/txtAngle" method="_on_LESkeleton_update_gui_ang"]
+[connection signal="update_gui_ang" from="LeadingEdge/LESkeleton" to="GUI/GridContainer/VBoxContainer/PanelContainer2/VBoxContainer/HBoxContainer2/txtSweep" method="_on_LESkeleton_update_gui_ang"]
+[connection signal="update_gui_ang" from="LeadingEdge/LESkeleton" to="GUI/GridContainer/VBoxContainer/PanelContainer/GridContainer/sldAngle" method="_on_LESkeleton_update_gui_ang"]
 [connection signal="update_gui_ang" from="LeadingEdge/LESkeleton" to="GUI/GridContainer/VBoxContainer/HBoxContainer/lblLEPos" method="_on_LESkeleton_update_gui_ang"]
-[connection signal="update_gui_ang" from="LeadingEdge/LESkeleton" to="GUI/GridContainer/VBoxContainer/PanelContainer/GridContainer/sldAngle2" method="_on_LESkeleton_update_gui_ang"]
+[connection signal="update_gui_ang" from="LeadingEdge/LESkeleton" to="GUI/GridContainer/VBoxContainer/PanelContainer2/VBoxContainer/sldSweep" method="_on_LESkeleton_update_gui_ang"]

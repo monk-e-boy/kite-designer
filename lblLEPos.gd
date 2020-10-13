@@ -18,3 +18,7 @@ func _ready():
 
 func _on_LESkeleton_update_gui_ang(le_joint, value):
 	self.text = str(le_joint)
+
+
+func _on_sldSweep_value_changed(value):
+	pass # Replace with function body.

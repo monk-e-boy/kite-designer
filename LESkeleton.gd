@@ -133,7 +133,7 @@ func tube_end(surface_tool, tube_end: Vector3, tube_angle_z: float, radius: floa
 
 #func _process(delta):
 #	pass
-signal update_gui_ang(le_joint, value)
+signal update_gui_ang(le_joint, angle, sweep)
 var le_joint_highlight = 0
 
 func _on_btnLENext_pressed():
@@ -153,16 +153,22 @@ func _on_btnLEPrev_pressed():
 func update_highlighted():
 	self.leading_edge.get_section(le_joint_highlight).set_highlighted(true)
 	var angle = self.leading_edge.get_section(le_joint_highlight).get_angle()
-	emit_signal("update_gui_ang", self.le_joint_highlight, angle)
+	var sweep = self.leading_edge.get_section(le_joint_highlight).get_sweep()
+	emit_signal(
+		"update_gui_ang",
+		self.le_joint_highlight,
+		angle,
+		sweep
+	)
+	
+
+func _on_sldSweep_value_changed(value):
+	self.leading_edge.get_section(le_joint_highlight).set_sweep(value)
+	self.leading_edge.update_sections()
+	self.update_highlighted()
 
 
 func _on_sldAngle_value_changed(value):
 	self.leading_edge.get_section(le_joint_highlight).set_angle(value)
-	self._process(1)
-	#var txt = get_node("/root/Spatial/GUI/GridContainer/VBoxContainer/PanelContainer/GridContainer/txtAngle")
-	#txt.text = value
-	
-func _on_sldAngle2_value_changed(value):
-	self.leading_edge.get_section(le_joint_highlight).set_angle2(value)
 	self.leading_edge.update_sections()
 	self.update_highlighted()

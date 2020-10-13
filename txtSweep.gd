@@ -1,4 +1,4 @@
-extends HSlider
+extends LineEdit
 
 
 # Declare member variables here. Examples:
@@ -17,4 +17,4 @@ func _ready():
 
 
 func _on_LESkeleton_update_gui_ang(le_joint, angle, sweep):
-	self.value = angle
+	self.text = str(sweep)

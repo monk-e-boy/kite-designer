@@ -55,16 +55,13 @@ func update():
 	
 	var direction = Vector3(self.options['length'],0,0)
 	# pivot around vertical to sweep back
-	direction = direction.rotated(Vector3(0,1,0), deg2rad(self.options['sweep']))
-	
+	var sweep = self.get_calculated_sweep()
+	direction = direction.rotated(Vector3(0,1,0), deg2rad(sweep))
 	
 	# pivot around Z to angle down (mid is horizontal, tips are almost vertical)
 	var angle = self.get_calculated_angle()
 	direction = direction.rotated(Vector3(0,0,1), deg2rad(angle))
-	print("User set:", self.options['angle'], " calculated", angle)
-
-
-
+	
 	# apply the same transforms to the profile connection point on the LE
 	# tube this is marked for sewing
 	var prof_conn = Vector3(0,options['tube-radius'],0)
@@ -99,6 +96,14 @@ func get_calculated_angle():
 	else:
 		return self.options['angle']
 
+
+func get_calculated_sweep():
+	# HACK - this should dissapear when I fix how the first section
+	#        has a previous section ... maybe?	
+	if self.prev_section:
+		return self.options['sweep'] + self.prev_section.get_calculated_sweep()
+	else:
+		return self.options['sweep']
 
 #func get_mid_angle(sec: LESection):
 func get_mid_angle(sec):
@@ -244,13 +249,8 @@ func set_highlighted(h):
 	self.options['render-plane'] = h
 	self.options['render-spokes'] = h
 	
-func set_angle(a):
-	#self.options['angle'] = a
-	self.options['tube-radius'] = a
-	# rebuild the section (bone, joint, inters, etc)
-	self.update()
 	
-func set_angle2(a):
+func set_angle(a):
 	self.options['angle'] = a
 	# rebuild the section (bone, joint, inters, etc)
 	self.update()
@@ -258,6 +258,13 @@ func set_angle2(a):
 func get_angle():
 	return self.options['angle']
 	
+func set_sweep(a):
+	self.options['sweep'] = a
+	self.update()
+
+func get_sweep():
+	return self.options['sweep']
+
 func render(surface_tool):
 	if self.options['render-skeleton']:
 		surface_tool.add_color(self.color)

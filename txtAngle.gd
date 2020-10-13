@@ -9,5 +9,5 @@ func _ready():
 #func _process(delta):
 #	pass
 
-func _on_LESkeleton_update_gui_ang(le_joint, value):
-	self.text = str(value)
+func _on_LESkeleton_update_gui_ang(le_joint, angle, sweep):
+	self.text = str(angle)
