@@ -264,6 +264,14 @@ func set_sweep(a):
 
 func get_sweep():
 	return self.options['sweep']
+	
+func set_radius(d):
+	self.options['tube-radius'] = d
+	self.update()
+	
+func set_length(d):
+	self.options['length'] = d
+	self.update()
 
 func render(surface_tool):
 	if self.options['render-skeleton']:

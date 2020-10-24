@@ -37,9 +37,9 @@ func _init(options):
 			'tube-radius': 0.2,
 			'sweep': 5,
 			'angle': -5,
-			'render-spokes': true,
+			'render-spokes': false,
 			'render-rays': false,
-			'render-inters': true,
+			'render-inters': false,
 			'render-skeleton': false
 		},
 		#
@@ -68,28 +68,20 @@ func _init(options):
 			'profile-connection-angle': 270,
 			'seam-angle': seam_angle,
 			'tube-radius': 0.2,
-			'render-spokes': true,
+			'render-spokes': false,
 			'render-rays': false,
 			'render-inters': true,
-			'render-skeleton': true
+			'render-skeleton': false
 		}
-		
-		# these are relative to previous changes in angle and swwp
-		#opts['angle'] += angle
-		#opts['sweep'] += sweep
 		
 		if i == 1:
 			opts['tube-radius'] = 0.1
-	#		opts['sweep'] = 90
-	#		opts['angle'] = -45
 			
 		self.add_section(
 			self.sections[-1],
 			opts
 		)
-		
-		#angle += opts['angle']
-		#sweep += opts['sweep']
+
 	
 	
 func add_section(previous_section, options):
@@ -148,6 +140,30 @@ func get_spoke_count():
 	
 func get_section(i):
 	return self.sections[i]
+	
+# pass in section number, get a list of
+# [ [vec1, vec2], [vec1, vec2] .... ]
+# that describe the tube:
+#   from    end_1.spoke_1
+#   to      end_2.spoke_1
+#
+func get_tube_faces(section):
+	var i = section
+	var ret = []
+	
+	for spoke in range(self.spoke_count):
+		var s1 = self.sections[i+0]
+		var v1 = s1.inters[spoke]
+	
+		var s2 = self.sections[i+1]
+		var v2 = s2.inters[spoke]
+		
+		
+		if v1 and v2:
+			ret.append( [v1, v2] )
+
+	return ret 
+	
 
 func render(surface_tool):
 	# waggle the angle between -90 and +90 degrees

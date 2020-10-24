@@ -15,13 +15,18 @@ var angle3 = 1
 const KPlane = preload("KPlane.gd")
 const LESection = preload("LESection.gd")
 const LE = preload("LE_.gd")
+const Rib = preload("Rib.gd")
 
 
 var leading_edge = null
 var surface_tool = null
 
+
+var rib = null
+
 func _ready():
 	leading_edge = LE.new({})
+	rib = Rib.new()
 
 
 func _process(delta):
@@ -39,6 +44,10 @@ func _process(delta):
 	#
 	#
 	leading_edge.render(surface_tool)
+	
+	# RIB HACKS
+	var bits = leading_edge.get_tube_faces(0)
+	rib.render(surface_tool, bits)
 	#
 	#
 	
@@ -170,5 +179,17 @@ func _on_sldSweep_value_changed(value):
 
 func _on_sldAngle_value_changed(value):
 	self.leading_edge.get_section(le_joint_highlight).set_angle(value)
+	self.leading_edge.update_sections()
+	self.update_highlighted()
+
+
+func _on_sldRadius_value_changed(value):
+	self.leading_edge.get_section(le_joint_highlight).set_radius(value)
+	self.leading_edge.update_sections()
+	self.update_highlighted()
+
+
+func _on_sldLength_value_changed(value):
+	self.leading_edge.get_section(le_joint_highlight).set_length(value)
 	self.leading_edge.update_sections()
 	self.update_highlighted()
