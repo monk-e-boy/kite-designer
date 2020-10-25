@@ -47,6 +47,12 @@ func _process(delta):
 	
 	# RIB HACKS
 	var bits = leading_edge.get_tube_faces(0)
+	#bits += leading_edge.get_tube_faces(1)
+	rib.build(bits)
+
+	bits = leading_edge.get_tube_faces(1)
+	rib.build(bits)
+	
 	rib.render(surface_tool, bits)
 	#
 	#

@@ -158,7 +158,6 @@ func get_tube_faces(section):
 		var s2 = self.sections[i+1]
 		var v2 = s2.inters[spoke]
 		
-		
 		if v1 and v2:
 			ret.append( [v1, v2] )
 

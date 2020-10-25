@@ -41,21 +41,44 @@ func find_intersects(from, direction, tube_faces):
 	var line1 = tube_faces[len(tube_faces)-1]
 	var line2 = tube_faces[0]
 	ret += self.find_intersects_edges(from, direction, line1, line2)
+	
+	if len(ret) > 1:
+		# multiple intersections (front and back)
+		# choose closest to 'from'
+		# TODO: loop over all items, not just first two
+		#       more than two items is a possibility
+		var d1 = from.distance_to(ret[0])
+		var d2 = from.distance_to(ret[1])
+		
+		if d1 > d2:
+			ret = [ret[1]]
+		else:
+			ret = [ret[0]]
 		
 	return ret
 
-var p = 0.9
-var d = 0.01
+var ang = 0
+var a = Vector3(0,0,0)
+var b = Vector3(0,0,0)
+var points = []
+
+func build(tube_faces):
+	var r = Vector3(0, 0.1, 0);
+	r = r.rotated(Vector3(0,0,1), deg2rad(self.ang))
+		
+	self.a = r + Vector3(0.4, 0.9, -0.7)
+	self.b = Vector3(0, 0.2, 1.5)
+	
+	self.points += self.find_intersects(self.a, self.b, tube_faces)
+
 
 func render(surface_tool, tube_faces):
-	self.p += self.d
-	if p > 1.2:
-		self.d *= -1
-	if p < 0.7:
-		self.d *= -1
-		
-	var a = Vector3(0.1, self.p, -0.7)
-	var b = Vector3(0, 0.2, 1.5)
+	#if self.ang < 362:
+	self.ang += 2
+	
+	if self.ang > 362:
+		self.ang = 0
+		self.points = []
 	
 	# SEAM is PURPLE
 	surface_tool.add_color(Color8(255,0,255))
@@ -84,9 +107,9 @@ func render(surface_tool, tube_faces):
 #	else:
 #		var x = 0
 		
-	var points = self.find_intersects(a, b, tube_faces)
-	for p in points:
+	
+	for i in len(self.points)-1:
 		surface_tool.add_color(Color8(255,0,0))
-		surface_tool.add_vertex(p)
-		surface_tool.add_vertex(p+Vector3(0,0.2,0))
+		surface_tool.add_vertex(self.points[i])
+		surface_tool.add_vertex(self.points[i+1])
 	
