@@ -57,36 +57,65 @@ func find_intersects(from, direction, tube_faces):
 		
 	return ret
 
-var ang = 0
-var a = Vector3(0,0,0)
-var b = Vector3(0,0,0)
+var inters = []
 var points = []
 
-func build(tube_faces):
-	var r = Vector3(0, 0.1, 0);
-	r = r.rotated(Vector3(0,0,1), deg2rad(self.ang))
-		
-	self.a = r + Vector3(0.4, 0.9, -0.7)
-	self.b = Vector3(0, 0.2, 1.5)
+func build(list_tube_faces):
+	var rib_section_radius = 0.1
+
+	for ang in range(0, 360, 30):
 	
-	self.points += self.find_intersects(self.a, self.b, tube_faces)
+		#
+		# TODO: build spokes correctly, they are not placed
+		#       along the profile and are NOT moved correctly
+		#
+		var spoke = Vector3(0, rib_section_radius, 0)
+		spoke = spoke.rotated(Vector3(0,0,1), deg2rad(ang))
+		var spoke_end = spoke + Vector3(0.4, 0.9, -0.7)
+
+		#
+		# Shoot lazers from spoke ends into the LE tubes
+		# measure where the lazers hit
+		#
+		var lazer = Vector3(0, 0.2, 1.5)
+		var inter = {
+			'start'     : spoke_end,
+			'direction' : lazer,
+			'intersect' : false
+		}
+		
+		for tube_faces in list_tube_faces:
+			var tmp = self.find_intersects(spoke_end, lazer, tube_faces)
+			if len(tmp) > 0:
+				inter['intersect'] = tmp[0]
+			
+		inters.append(inter)
+
 
 
 func render(surface_tool, tube_faces):
-	#if self.ang < 362:
-	self.ang += 2
 	
-	if self.ang > 362:
-		self.ang = 0
-		self.points = []
+	for i in self.inters:
+		surface_tool.add_color(Color8(70,70,70))
+		#surface_tool.add_color(Color8(255,0,255))
+		surface_tool.add_vertex(i['start'])
+		#surface_tool.add_vertex(i['start']+i['direction'])
+		if i['intersect']:
+			surface_tool.add_vertex(i['intersect'])
+		else:
+			surface_tool.add_vertex(i['start']+i['direction'])
+			
+	for pos in len(self.inters)-1:
+		surface_tool.add_color(Color8(255,0,255))
+		
+		#surface_tool.add_vertex(i['start']+i['direction'])
+		if self.inters[pos]['intersect'] and self.inters[pos+1]['intersect']:
+			surface_tool.add_vertex(self.inters[pos]['intersect'])
+			surface_tool.add_vertex(self.inters[pos+1]['intersect'])
+
 	
-	# SEAM is PURPLE
-	surface_tool.add_color(Color8(255,0,255))
-	surface_tool.add_vertex(a)
-	surface_tool.add_vertex(a+b)
-	
-	var line1 = tube_faces[0]
-	var line2 = tube_faces[1]
+	var line1 = tube_faces[0][0]
+	var line2 = tube_faces[0][1]
 	
 	surface_tool.add_color(Color8(255,0,0))
 	surface_tool.add_vertex(line1[0])
