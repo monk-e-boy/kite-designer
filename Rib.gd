@@ -61,6 +61,7 @@ var inters = []
 var points = []
 
 func build(list_tube_faces):
+	self.inters = []
 	var rib_section_radius = 0.1
 
 	for ang in range(0, 360, 30):
@@ -90,8 +91,21 @@ func build(list_tube_faces):
 				inter['intersect'] = tmp[0]
 			
 		inters.append(inter)
-
-
+		
+# highlight the end of the rib where it connects to the LE
+func render_end_highlight(surface_tool, tube_faces):
+	for pos in len(self.inters)-1:
+		surface_tool.add_color(Color8(255,0,255))
+		
+		#surface_tool.add_vertex(i['start']+i['direction'])
+		if self.inters[pos]['intersect'] and self.inters[pos+1]['intersect']:
+			surface_tool.add_vertex(self.inters[pos]['intersect'])
+			surface_tool.add_vertex(self.inters[pos+1]['intersect'])
+			
+	# COMPLETE CIRCLE
+	if self.inters[-1]['intersect'] and self.inters[0]['intersect']:
+		surface_tool.add_vertex(self.inters[-1]['intersect'])
+		surface_tool.add_vertex(self.inters[0]['intersect'])
 
 func render(surface_tool, tube_faces):
 	
@@ -103,15 +117,11 @@ func render(surface_tool, tube_faces):
 		if i['intersect']:
 			surface_tool.add_vertex(i['intersect'])
 		else:
+			# NO INTERSECTION found - show lazer shooting
+			# off into the distance. Good User Experience
 			surface_tool.add_vertex(i['start']+i['direction'])
 			
-	for pos in len(self.inters)-1:
-		surface_tool.add_color(Color8(255,0,255))
-		
-		#surface_tool.add_vertex(i['start']+i['direction'])
-		if self.inters[pos]['intersect'] and self.inters[pos+1]['intersect']:
-			surface_tool.add_vertex(self.inters[pos]['intersect'])
-			surface_tool.add_vertex(self.inters[pos+1]['intersect'])
+	self.render_end_highlight(surface_tool, tube_faces)
 
 	
 	var line1 = tube_faces[0][0]
