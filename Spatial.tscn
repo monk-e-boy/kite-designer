@@ -1,4 +1,4 @@
-[gd_scene load_steps=33 format=2]
+[gd_scene load_steps=35 format=2]
 
 [ext_resource path="res://MyMesh.gd" type="Script" id=1]
 [ext_resource path="res://LeadingEdgeSection.tscn" type="PackedScene" id=2]
@@ -19,6 +19,7 @@
 [ext_resource path="res://OrbitCameraFocus.gd" type="Script" id=17]
 [ext_resource path="res://optionsContainer.gd" type="Script" id=18]
 [ext_resource path="res://LESolidView.gd" type="Script" id=19]
+[ext_resource path="res://PlaneSolidView.gd" type="Script" id=20]
 
 [sub_resource type="ShaderMaterial" id=1]
 
@@ -54,26 +55,31 @@ flags_unshaded = true
 flags_no_depth_test = true
 albedo_color = Color( 0.862745, 0.262745, 0.811765, 1 )
 
-[sub_resource type="SpatialMaterial" id=13]
+[sub_resource type="SpatialMaterial" id=9]
 flags_transparent = true
-vertex_color_use_as_albedo = true
+flags_unshaded = true
+params_cull_mode = 2
+albedo_color = Color( 1, 0.984314, 0, 0.368627 )
+
+[sub_resource type="SpatialMaterial" id=10]
+flags_transparent = true
 params_cull_mode = 2
 params_depth_draw_mode = 1
 albedo_color = Color( 0.392157, 0.552941, 0.803922, 0.666667 )
 
-[sub_resource type="SpatialMaterial" id=9]
+[sub_resource type="SpatialMaterial" id=11]
 flags_unshaded = true
 albedo_color = Color( 0, 0, 0, 1 )
 
-[sub_resource type="SpatialMaterial" id=10]
+[sub_resource type="SpatialMaterial" id=12]
 params_cull_mode = 2
 albedo_color = Color( 0.337255, 0.643137, 0.913725, 1 )
 
-[sub_resource type="SpatialMaterial" id=11]
+[sub_resource type="SpatialMaterial" id=13]
 flags_unshaded = true
 albedo_color = Color( 0.615686, 0.0901961, 0.447059, 1 )
 
-[sub_resource type="GDScript" id=12]
+[sub_resource type="GDScript" id=14]
 script/source = "extends MeshInstance
 
 export(SpatialMaterial) var material
@@ -669,30 +675,33 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )
 script = ExtResource( 8 )
 material = SubResource( 8 )
 
+[node name="PlaneSolidView" type="MeshInstance" parent="LeadingEdge/LESkeleton"]
+script = ExtResource( 20 )
+material = SubResource( 9 )
+
 [node name="LESolidView" type="MeshInstance" parent="LeadingEdge/LESkeleton"]
 script = ExtResource( 19 )
-material = SubResource( 13 )
+material = SubResource( 10 )
 
 [node name="Node" type="Node" parent="."]
 
 [node name="Profiles" type="MeshInstance" parent="Node"]
 visible = false
 script = ExtResource( 9 )
-material = SubResource( 9 )
+material = SubResource( 11 )
 
 [node name="Skin" type="MeshInstance" parent="Node/Profiles"]
 process_priority = 1
 script = ExtResource( 10 )
-material = SubResource( 10 )
+material = SubResource( 12 )
 
 [node name="SkinOutline" type="MeshInstance" parent="Node/Profiles/Skin"]
 process_priority = 2
 script = ExtResource( 11 )
-material = SubResource( 11 )
+material = SubResource( 13 )
 
 [node name="LE" type="MeshInstance" parent="Node/Profiles"]
-visible = false
-script = SubResource( 12 )
+script = SubResource( 14 )
 
 [node name="TestMeshInstance" type="MeshInstance" parent="."]
 visible = false
@@ -709,8 +718,8 @@ script = ExtResource( 5 )
 [connection signal="value_changed" from="GUI/GridContainer/VBoxContainer/PanelContainer2/VBoxContainer/optionsContainer/sldSweep" to="LeadingEdge/LESkeleton" method="_on_sldSweep_value_changed"]
 [connection signal="value_changed" from="GUI/GridContainer/VBoxContainer/PanelContainer2/VBoxContainer/optionsContainer/sldRadius" to="LeadingEdge/LESkeleton" method="_on_sldRadius_value_changed"]
 [connection signal="value_changed" from="GUI/GridContainer/VBoxContainer/PanelContainer2/VBoxContainer/optionsContainer/sldLength" to="LeadingEdge/LESkeleton" method="_on_sldLength_value_changed"]
-[connection signal="update_gui_ang" from="LeadingEdge/LESkeleton" to="GUI/GridContainer/VBoxContainer/HBoxContainer/lblLEPos" method="_on_LESkeleton_update_gui_ang"]
-[connection signal="update_gui_ang" from="LeadingEdge/LESkeleton" to="GUI/GridContainer/VBoxContainer/PanelContainer2/VBoxContainer/optionsContainer/sldAngle" method="_on_LESkeleton_update_gui_ang"]
-[connection signal="update_gui_ang" from="LeadingEdge/LESkeleton" to="GUI/GridContainer/VBoxContainer/PanelContainer2/VBoxContainer/optionsContainer/sldSweep" method="_on_LESkeleton_update_gui_ang"]
 [connection signal="update_gui_ang" from="LeadingEdge/LESkeleton" to="GUI/GridContainer/VBoxContainer/PanelContainer2/VBoxContainer/optionsContainer/HBoxContainer/txtAngle" method="_on_LESkeleton_update_gui_ang"]
 [connection signal="update_gui_ang" from="LeadingEdge/LESkeleton" to="GUI/GridContainer/VBoxContainer/PanelContainer2/VBoxContainer/optionsContainer/HBoxContainer2/txtSweep" method="_on_LESkeleton_update_gui_ang"]
+[connection signal="update_gui_ang" from="LeadingEdge/LESkeleton" to="GUI/GridContainer/VBoxContainer/PanelContainer2/VBoxContainer/optionsContainer/sldAngle" method="_on_LESkeleton_update_gui_ang"]
+[connection signal="update_gui_ang" from="LeadingEdge/LESkeleton" to="GUI/GridContainer/VBoxContainer/PanelContainer2/VBoxContainer/optionsContainer/sldSweep" method="_on_LESkeleton_update_gui_ang"]
+[connection signal="update_gui_ang" from="LeadingEdge/LESkeleton" to="GUI/GridContainer/VBoxContainer/HBoxContainer/lblLEPos" method="_on_LESkeleton_update_gui_ang"]

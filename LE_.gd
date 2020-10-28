@@ -51,7 +51,11 @@ func _init(options):
 		#
 	)
 	# The intersection plane at the centre of the kite is a special case:
-	var mid_plane = KPlane.new(Vector3(0,1,0), Vector3(0,0,1), Vector3(0,0,-1))
+	var mid_plane = KPlane.new(
+		point + Vector3(0,1,0),
+		point + Vector3(0,0,1),
+		point + Vector3(0,0,-1)
+	)
 	sec1.intersects(mid_plane)
 	
 	self.sections.append(sec1)
