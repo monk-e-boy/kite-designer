@@ -1,4 +1,4 @@
-[gd_scene load_steps=35 format=2]
+[gd_scene load_steps=37 format=2]
 
 [ext_resource path="res://MyMesh.gd" type="Script" id=1]
 [ext_resource path="res://LeadingEdgeSection.tscn" type="PackedScene" id=2]
@@ -20,6 +20,7 @@
 [ext_resource path="res://optionsContainer.gd" type="Script" id=18]
 [ext_resource path="res://LESolidView.gd" type="Script" id=19]
 [ext_resource path="res://PlaneSolidView.gd" type="Script" id=20]
+[ext_resource path="res://PlaneOutlineView.gd" type="Script" id=21]
 
 [sub_resource type="ShaderMaterial" id=1]
 
@@ -60,6 +61,11 @@ flags_transparent = true
 flags_unshaded = true
 params_cull_mode = 2
 albedo_color = Color( 1, 0.984314, 0, 0.368627 )
+
+[sub_resource type="SpatialMaterial" id=15]
+flags_unshaded = true
+vertex_color_use_as_albedo = true
+albedo_color = Color( 1, 1, 0, 1 )
 
 [sub_resource type="SpatialMaterial" id=10]
 flags_transparent = true
@@ -679,6 +685,10 @@ material = SubResource( 8 )
 script = ExtResource( 20 )
 material = SubResource( 9 )
 
+[node name="PlaneOutlineView" type="MeshInstance" parent="LeadingEdge/LESkeleton"]
+script = ExtResource( 21 )
+material = SubResource( 15 )
+
 [node name="LESolidView" type="MeshInstance" parent="LeadingEdge/LESkeleton"]
 script = ExtResource( 19 )
 material = SubResource( 10 )
@@ -720,6 +730,6 @@ script = ExtResource( 5 )
 [connection signal="value_changed" from="GUI/GridContainer/VBoxContainer/PanelContainer2/VBoxContainer/optionsContainer/sldLength" to="LeadingEdge/LESkeleton" method="_on_sldLength_value_changed"]
 [connection signal="update_gui_ang" from="LeadingEdge/LESkeleton" to="GUI/GridContainer/VBoxContainer/PanelContainer2/VBoxContainer/optionsContainer/HBoxContainer/txtAngle" method="_on_LESkeleton_update_gui_ang"]
 [connection signal="update_gui_ang" from="LeadingEdge/LESkeleton" to="GUI/GridContainer/VBoxContainer/PanelContainer2/VBoxContainer/optionsContainer/HBoxContainer2/txtSweep" method="_on_LESkeleton_update_gui_ang"]
+[connection signal="update_gui_ang" from="LeadingEdge/LESkeleton" to="GUI/GridContainer/VBoxContainer/HBoxContainer/lblLEPos" method="_on_LESkeleton_update_gui_ang"]
 [connection signal="update_gui_ang" from="LeadingEdge/LESkeleton" to="GUI/GridContainer/VBoxContainer/PanelContainer2/VBoxContainer/optionsContainer/sldAngle" method="_on_LESkeleton_update_gui_ang"]
 [connection signal="update_gui_ang" from="LeadingEdge/LESkeleton" to="GUI/GridContainer/VBoxContainer/PanelContainer2/VBoxContainer/optionsContainer/sldSweep" method="_on_LESkeleton_update_gui_ang"]
-[connection signal="update_gui_ang" from="LeadingEdge/LESkeleton" to="GUI/GridContainer/VBoxContainer/HBoxContainer/lblLEPos" method="_on_LESkeleton_update_gui_ang"]

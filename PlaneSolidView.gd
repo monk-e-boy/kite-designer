@@ -15,7 +15,10 @@ func _ready():
 func _process(delta):
 	var parent = get_node("..")
 	var leading_edge = parent.leading_edge
-	var section = leading_edge.sections[1]
+	var section = leading_edge.get_highlight_plane_section()
+	if not section:
+		return
+		
 	var plane = section.plane
 	
 	#

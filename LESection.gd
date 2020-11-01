@@ -295,10 +295,6 @@ func render(surface_tool):
 	#
 	#
 	
-	# the plane we are projecting the LE tube onto
-	if self.options['render-plane'] and (not self.plane == null):
-		self.plane.render(surface_tool)
-	
 	# spokes of the LE tube radius
 	if self.options['render-spokes']:
 		# seam vector - just a little white nub

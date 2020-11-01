@@ -166,7 +166,14 @@ func get_tube_faces(section):
 			ret.append( [v1, v2] )
 
 	return ret 
-	
+
+
+func get_highlight_plane_section():
+	for section in self.sections:
+		if section.options['render-plane'] and (not section.plane == null):
+			return section
+	return false
+
 
 func render(surface_tool):
 	# waggle the angle between -90 and +90 degrees
